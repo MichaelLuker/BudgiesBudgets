@@ -58,8 +58,8 @@ class _newTransactionState extends State<newTransaction> {
                   newTransaction.amount = 0.0;
                 }
                 newTransaction.memo = memoController.text;
-                newTransaction.id = data.transactions.length;
-                data.transactions.add(newTransaction);
+                newTransaction.id = data.allTransactions.length;
+                data.allTransactions.add(newTransaction);
                 updateList();
                 Navigator.of(context).pop();
               },

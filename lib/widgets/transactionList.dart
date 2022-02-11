@@ -8,21 +8,21 @@ import 'package:flutter/material.dart';
 
 class TransactionList extends StatefulWidget {
   final FinancialData data;
-  const TransactionList({
-    Key? key,
-    required this.data,
-  }) : super(key: key);
+  final Function recalculate;
+  const TransactionList(
+      {Key? key, required this.data, required this.recalculate})
+      : super(key: key);
 
   @override
-  TransactionListState createState() => TransactionListState(data: data);
+  TransactionListState createState() =>
+      TransactionListState(data: data, recalculate: recalculate);
 }
 
 class TransactionListState extends State<TransactionList> {
   final FinancialData data;
-  TransactionListState({
-    Key? key,
-    required this.data,
-  });
+  final Function recalculate;
+  TransactionListState(
+      {Key? key, required this.data, required this.recalculate});
   bool expanded = true;
   List<TableRow> rows = [];
   final TextStyle label = const TextStyle(color: Colors.amber);
@@ -35,9 +35,10 @@ class TransactionListState extends State<TransactionList> {
   }
 
   void generateRows() {
+    data.sort();
     setState(() {
       rows = [];
-      for (Transaction t in data.transactions) {
+      for (Transaction t in data.filteredTransactions) {
         TextStyle numValue = TextStyle(
             color:
                 (t.amount >= 0) ? Colors.lightGreenAccent : Colors.redAccent);
@@ -55,6 +56,13 @@ class TransactionListState extends State<TransactionList> {
                         });
                   },
                   icon: Icon(Icons.edit, size: 18))),
+          TableCell(
+              child: IconButton(
+                  onPressed: () {
+                    data.allTransactions.remove(t);
+                    generateRows();
+                  },
+                  icon: Icon(Icons.delete, size: 18))),
           TableCell(
               verticalAlignment: TableCellVerticalAlignment.middle,
               child: Center(child: Text(t.id.toString()))),
@@ -94,6 +102,9 @@ class TransactionListState extends State<TransactionList> {
         ]));
       }
     });
+    // Once the transactions have been updated run the recalculate method
+    //   at this point all modifications to the transaction list should be done for now
+    recalculate();
   }
 
   @override
@@ -133,6 +144,12 @@ class TransactionListState extends State<TransactionList> {
                               child: Center(
                                   child: Text(
                             "Edit",
+                            style: label,
+                          ))),
+                          TableCell(
+                              child: Center(
+                                  child: Text(
+                            "Delete",
                             style: label,
                           ))),
                           TableCell(

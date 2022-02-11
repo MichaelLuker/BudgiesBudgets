@@ -44,6 +44,15 @@ class _MyHomePageState extends State<MyHomePage> {
   late MonthSelect monthSelect;
   late TransactionList transactionList;
 
+  // Function to call all the other pieces to recalculate graphs / budgets when
+  //   transactions are created, deleted, or modified
+  void recalculate({bool regenerateRows = false}) {
+    if (regenerateRows) {
+      transactionListKey.currentState!.generateRows();
+    }
+    log("Reticulating Splines... Done!");
+  }
+
   @override
   void initState() {
     super.initState();
@@ -52,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
     data.startDate = DateTime.now().subtract(const Duration(days: 30));
     data.endDate = DateTime.now();
     // Add an initial test transaction to display
-    data.transactions.add(Transaction.withValues(
+    data.allTransactions.add(Transaction.withValues(
         id: 0,
         date: DateTime.now(),
         category: Category.Personal,
@@ -60,19 +69,15 @@ class _MyHomePageState extends State<MyHomePage> {
         amount: -100,
         memo: "Test Transaction"));
     // Instantiate the different window widgets
-    monthSelect = MonthSelect(data: data);
-    transactionList = TransactionList(
-      key: transactionListKey,
+    monthSelect = MonthSelect(
       data: data,
+      recalculate: recalculate,
     );
+    transactionList = TransactionList(
+        key: transactionListKey, data: data, recalculate: recalculate);
     setState(() {
       initialized = true;
     });
-    // Future.delayed(const Duration(milliseconds: 500)).then((value) {
-    //   setState(() {
-
-    //   });
-    // });
   }
 
   @override

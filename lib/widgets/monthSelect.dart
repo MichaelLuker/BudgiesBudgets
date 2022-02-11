@@ -8,22 +8,21 @@ import 'package:flutter/material.dart';
 class MonthSelect extends StatefulWidget {
   // Save the current start and end dates
   final FinancialData data;
+  final Function recalculate;
 
   // Set dates on creation
-  const MonthSelect({
-    Key? key,
-    required this.data,
-  }) : super(key: key);
+  const MonthSelect({Key? key, required this.data, required this.recalculate})
+      : super(key: key);
 
   @override
-  State<MonthSelect> createState() => _MonthSelectState(data: data);
+  State<MonthSelect> createState() =>
+      _MonthSelectState(data: data, recalculate: recalculate);
 }
 
 class _MonthSelectState extends State<MonthSelect> {
   final FinancialData data;
-  _MonthSelectState({
-    required this.data,
-  });
+  final Function recalculate;
+  _MonthSelectState({required this.data, required this.recalculate});
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +59,7 @@ class _MonthSelectState extends State<MonthSelect> {
                       setState(() {
                         data.startDate = value.start;
                         data.endDate = value.end;
+                        recalculate(regenerateRows: true);
                       });
                     }
                   });
