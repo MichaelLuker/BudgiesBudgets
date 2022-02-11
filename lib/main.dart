@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:budgies_budgets/widgets/newTransaction.dart';
 import 'package:budgies_budgets/widgets/transactionList.dart';
+import 'package:grizzly_io/io_loader.dart';
 import 'package:svg_icon/svg_icon.dart';
 import 'package:budgies_budgets/helpers/backgroundData.dart';
 import 'package:budgies_budgets/widgets/userAndMonthSelect.dart';
@@ -53,24 +54,37 @@ class _MyHomePageState extends State<MyHomePage> {
     log("Reticulating Splines... Done!");
   }
 
+  void loadTransactions() async {
+    // Load my current transaction list
+    String filePath =
+        "C:\\Users\\Zhyne\\Documents\\Projects\\BudgiesBudgets\\InitialTransactions.csv";
+    final csv = await readCsv(filePath);
+    setState(() {
+      for (List<String> row in csv) {
+        Transaction t = Transaction.withValues(
+            user: row[0],
+            date: DateTime.parse(row[1]),
+            category: categoryFromString(row[2]),
+            account: accountFromString(row[3]),
+            amount: double.parse(row[4]),
+            memo: row[5]);
+        data.allTransactions.add(t);
+      }
+    });
+    recalculate(regenerateRows: true);
+  }
+
   @override
   void initState() {
     super.initState();
     // Set the initial start and end dates for a range to analyze
     data = FinancialData();
-    data.startDate = DateTime.now().subtract(const Duration(days: 30));
+    //data.startDate = DateTime.now().subtract(const Duration(days: 30));
+    data.startDate = DateTime.parse("2022-01-01");
     data.endDate = DateTime.now();
     data.users.add("Mike");
     data.currentUser = "Mike";
-    // Add an initial test transaction to display
-    data.allTransactions.add(Transaction.withValues(
-        user: "Mike",
-        id: 0,
-        date: DateTime.now(),
-        category: Category.Personal,
-        account: Account.Visa,
-        amount: -100,
-        memo: "Test Transaction"));
+    loadTransactions();
     // Instantiate the different window widgets
     userAndMonthSelect = UserAndMonthSelect(
       data: data,

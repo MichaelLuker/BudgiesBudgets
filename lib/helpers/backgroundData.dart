@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 // Different categories that a transaction can be
 enum Category {
-  Rent,
+  Housing,
   Transportation,
   Food,
   Utilities,
@@ -14,11 +14,59 @@ enum Category {
   Savings,
   Personal,
   Entertainment,
-  Miscellaneous
+  Miscellaneous,
+  Salary,
+  Transfer
+}
+
+Category categoryFromString(String s) {
+  switch (s) {
+    case "Housing":
+      return Category.Housing;
+    case "Transportation":
+      return Category.Transportation;
+    case "Food":
+      return Category.Food;
+    case "Utilities":
+      return Category.Utilities;
+    case "Insurance":
+      return Category.Insurance;
+    case "Medical":
+      return Category.Medical;
+    case "Savings":
+      return Category.Savings;
+    case "Personal":
+      return Category.Personal;
+    case "Entertainment":
+      return Category.Entertainment;
+    case "Miscellaneous":
+      return Category.Miscellaneous;
+    case "Salary":
+      return Category.Salary;
+    case "Transfer":
+      return Category.Transfer;
+    default:
+      return Category.Personal;
+  }
 }
 
 // Different accounts that transactions can pull from
 enum Account { Checking, Savings, Visa, Giftcard }
+
+Account accountFromString(String s) {
+  switch (s) {
+    case "Checking":
+      return Account.Checking;
+    case "Savings":
+      return Account.Savings;
+    case "Visa":
+      return Account.Visa;
+    case "Giftcard":
+      return Account.Giftcard;
+    default:
+      return Account.Visa;
+  }
+}
 
 List<String> GiftAccounts = [];
 
@@ -34,7 +82,6 @@ class Transaction {
   Transaction();
   Transaction.withValues(
       {required this.user,
-      required this.id,
       required this.date,
       required this.category,
       required this.account,

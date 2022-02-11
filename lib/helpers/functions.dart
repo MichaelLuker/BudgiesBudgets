@@ -1,4 +1,6 @@
 // Return a 3 character string for the month code
+import 'package:budgies_budgets/helpers/backgroundData.dart';
+
 String monthString(int n) {
   switch (n) {
     case 1:

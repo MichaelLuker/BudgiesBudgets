@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:budgies_budgets/helpers/backgroundData.dart';
 import 'package:budgies_budgets/helpers/functions.dart';
+import 'package:grizzly_io/io_loader.dart';
 
 class newTransaction extends StatefulWidget {
   final FinancialData data;
@@ -223,9 +224,29 @@ class _newTransactionState extends State<newTransaction> {
                         color: Color.fromARGB(255, 114, 114, 114)),
                     child: IconButton(
                         onPressed: () async {
-                          FilePickerResult? res =
+                          FilePickerResult? file =
                               await FilePicker.platform.pickFiles();
-                          log("File selected ${res.toString()}");
+                          if (file != null) {
+                            String filePath = file.files[0].path.toString();
+                            log(filePath);
+                            final csv = await readCsv(filePath);
+                            setState(() {
+                              for (List<String> row in csv) {
+                                Transaction t = Transaction.withValues(
+                                    user: row[0],
+                                    date: DateTime.parse(row[1]),
+                                    category: categoryFromString(row[2]),
+                                    account: accountFromString(row[3]),
+                                    amount: double.parse(row[4]),
+                                    memo: row[5]);
+                                log(t.toString());
+                                data.allTransactions.add(t);
+                              }
+                              log(data.allTransactions.toString());
+                              updateList();
+                            });
+                            Navigator.of(context).pop();
+                          }
                         },
                         icon: Icon(
                           Icons.note_add,

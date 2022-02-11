@@ -39,102 +39,110 @@ class TransactionListState extends State<TransactionList> {
     data.sort();
     setState(() {
       rows = [];
+      int count = 0;
       for (Transaction t in data.filteredTransactions) {
         TextStyle numValue = TextStyle(
             color:
                 (t.amount >= 0) ? Colors.lightGreenAccent : Colors.redAccent);
-        rows.add(TableRow(children: [
-          TableCell(
-              child: IconButton(
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return editTransaction(
-                            transaction: t,
-                            updateList: generateRows,
-                          );
+        rows.add(TableRow(
+            decoration: BoxDecoration(
+                color: (count % 2 == 0)
+                    ? Color.fromARGB(255, 66, 66, 66)
+                    : Color.fromARGB(255, 80, 80, 80)),
+            children: [
+              TableCell(
+                  child: IconButton(
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return editTransaction(
+                                transaction: t,
+                                updateList: generateRows,
+                              );
+                            });
+                      },
+                      icon: Icon(Icons.edit, size: 18))),
+              TableCell(
+                  child: IconButton(
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: Text("Confirm User Deletion"),
+                                content: Text(
+                                    "Please confirm that the transaction should be deleted...\n\n${t.toString()}"),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text(
+                                        "Cancel",
+                                        style:
+                                            TextStyle(color: Colors.redAccent),
+                                      )),
+                                  TextButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          confirmDelete = true;
+                                        });
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text(
+                                        "Confirm",
+                                        style: TextStyle(
+                                            color: Colors.lightGreenAccent),
+                                      ))
+                                ],
+                              );
+                            }).then((e) {
+                          if (confirmDelete) {
+                            data.allTransactions.remove(t);
+                            generateRows();
+                            setState(() {
+                              confirmDelete = false;
+                            });
+                          }
                         });
-                  },
-                  icon: Icon(Icons.edit, size: 18))),
-          TableCell(
-              child: IconButton(
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: Text("Confirm User Deletion"),
-                            content: Text(
-                                "Please confirm that the transaction should be deleted...\n\n${t.toString()}"),
-                            actions: [
-                              TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Text(
-                                    "Cancel",
-                                    style: TextStyle(color: Colors.redAccent),
-                                  )),
-                              TextButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      confirmDelete = true;
-                                    });
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Text(
-                                    "Confirm",
-                                    style: TextStyle(
-                                        color: Colors.lightGreenAccent),
-                                  ))
-                            ],
-                          );
-                        }).then((e) {
-                      if (confirmDelete) {
-                        data.allTransactions.remove(t);
-                        generateRows();
-                        setState(() {
-                          confirmDelete = false;
-                        });
-                      }
-                    });
-                  },
-                  icon: Icon(Icons.delete, size: 18))),
-          TableCell(
-              verticalAlignment: TableCellVerticalAlignment.middle,
-              child: Center(child: Text(formatDate(t.date)))),
-          TableCell(
-              verticalAlignment: TableCellVerticalAlignment.middle,
-              child: Center(
-                  child: Text(
-                t.category.toString().split(".")[1],
-                style: stringValue,
-              ))),
-          TableCell(
-              verticalAlignment: TableCellVerticalAlignment.middle,
-              child: Center(
-                  child: Text(
-                t.account.toString().split(".")[1],
-                style: stringValue,
-              ))),
-          TableCell(
-              verticalAlignment: TableCellVerticalAlignment.middle,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 0, 8.0, 0),
-                child: Text(
-                  t.strAmount(),
-                  style: numValue,
-                  textAlign: TextAlign.end,
-                ),
-              )),
-          TableCell(
-              verticalAlignment: TableCellVerticalAlignment.middle,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
-                child: Text(t.memo),
-              )),
-        ]));
+                      },
+                      icon: Icon(Icons.delete, size: 18))),
+              TableCell(
+                  verticalAlignment: TableCellVerticalAlignment.middle,
+                  child: Center(child: Text(formatDate(t.date)))),
+              TableCell(
+                  verticalAlignment: TableCellVerticalAlignment.middle,
+                  child: Center(
+                      child: Text(
+                    t.category.toString().split(".")[1],
+                    style: stringValue,
+                  ))),
+              TableCell(
+                  verticalAlignment: TableCellVerticalAlignment.middle,
+                  child: Center(
+                      child: Text(
+                    t.account.toString().split(".")[1],
+                    style: stringValue,
+                  ))),
+              TableCell(
+                  verticalAlignment: TableCellVerticalAlignment.middle,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 0, 8.0, 0),
+                    child: Text(
+                      t.strAmount(),
+                      style: numValue,
+                      textAlign: TextAlign.end,
+                    ),
+                  )),
+              TableCell(
+                  verticalAlignment: TableCellVerticalAlignment.middle,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
+                    child: Text(t.memo),
+                  )),
+            ]));
+        count++;
       }
     });
     // Once the transactions have been updated run the recalculate method
@@ -145,6 +153,7 @@ class TransactionListState extends State<TransactionList> {
   @override
   Widget build(BuildContext context) {
     return ExpansionPanelList(
+        expandedHeaderPadding: EdgeInsets.zero,
         expansionCallback: (int index, bool isExpanded) {
           setState(() {
             expanded = !isExpanded;
@@ -152,13 +161,15 @@ class TransactionListState extends State<TransactionList> {
         },
         children: [
           ExpansionPanel(
+              canTapOnHeader: true,
               headerBuilder: (BuildContext context, bool expanded) {
                 return const ListTile(
                     title: Center(
-                        child: Text(
-                  "Transactions",
-                  style: TextStyle(color: Color.fromARGB(255, 100, 255, 218)),
-                )));
+                  child: Text(
+                    "Transactions",
+                    style: TextStyle(color: Color.fromARGB(255, 100, 255, 218)),
+                  ),
+                ));
               },
               body: SizedBox(
                 height: 300,
@@ -168,7 +179,7 @@ class TransactionListState extends State<TransactionList> {
                     0: FixedColumnWidth(40),
                     1: FixedColumnWidth(80),
                     2: FixedColumnWidth(100),
-                    3: FixedColumnWidth(80),
+                    3: FixedColumnWidth(120),
                     4: FixedColumnWidth(80),
                     5: FixedColumnWidth(100),
                   },
