@@ -3,11 +3,15 @@
 
 import 'package:budgies_budgets/helpers/backgroundData.dart';
 import 'package:budgies_budgets/helpers/functions.dart';
+import 'package:budgies_budgets/widgets/editTransaction.dart';
 import 'package:flutter/material.dart';
 
 class TransactionList extends StatefulWidget {
   final FinancialData data;
-  const TransactionList({Key? key, required this.data}) : super(key: key);
+  const TransactionList({
+    Key? key,
+    required this.data,
+  }) : super(key: key);
 
   @override
   TransactionListState createState() => TransactionListState(data: data);
@@ -15,7 +19,10 @@ class TransactionList extends StatefulWidget {
 
 class TransactionListState extends State<TransactionList> {
   final FinancialData data;
-  TransactionListState({Key? key, required this.data});
+  TransactionListState({
+    Key? key,
+    required this.data,
+  });
   bool expanded = true;
   List<TableRow> rows = [];
   final TextStyle label = const TextStyle(color: Colors.amber);
@@ -24,10 +31,10 @@ class TransactionListState extends State<TransactionList> {
   @override
   void initState() {
     super.initState();
-    generateTiles();
+    generateRows();
   }
 
-  void generateTiles() {
+  void generateRows() {
     setState(() {
       rows = [];
       for (Transaction t in data.transactions) {
@@ -35,34 +42,55 @@ class TransactionListState extends State<TransactionList> {
             color:
                 (t.amount >= 0) ? Colors.lightGreenAccent : Colors.redAccent);
         rows.add(TableRow(children: [
-          TableCell(child: Center(child: Text(t.id.toString()))),
-          TableCell(child: Center(child: Text(formatDate(t.date)))),
           TableCell(
+              child: IconButton(
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return editTransaction(
+                            transaction: t,
+                            updateList: generateRows,
+                          );
+                        });
+                  },
+                  icon: Icon(Icons.edit, size: 18))),
+          TableCell(
+              verticalAlignment: TableCellVerticalAlignment.middle,
+              child: Center(child: Text(t.id.toString()))),
+          TableCell(
+              verticalAlignment: TableCellVerticalAlignment.middle,
+              child: Center(child: Text(formatDate(t.date)))),
+          TableCell(
+              verticalAlignment: TableCellVerticalAlignment.middle,
               child: Center(
                   child: Text(
-            t.category.toString().split(".")[1],
-            style: stringValue,
-          ))),
+                t.category.toString().split(".")[1],
+                style: stringValue,
+              ))),
           TableCell(
+              verticalAlignment: TableCellVerticalAlignment.middle,
               child: Center(
                   child: Text(
-            t.account.toString().split(".")[1],
-            style: stringValue,
-          ))),
+                t.account.toString().split(".")[1],
+                style: stringValue,
+              ))),
           TableCell(
+              verticalAlignment: TableCellVerticalAlignment.middle,
               child: Padding(
-            padding: const EdgeInsets.fromLTRB(0, 0, 8.0, 0),
-            child: Text(
-              t.strAmount(),
-              style: numValue,
-              textAlign: TextAlign.end,
-            ),
-          )),
+                padding: const EdgeInsets.fromLTRB(0, 0, 8.0, 0),
+                child: Text(
+                  t.strAmount(),
+                  style: numValue,
+                  textAlign: TextAlign.end,
+                ),
+              )),
           TableCell(
+              verticalAlignment: TableCellVerticalAlignment.middle,
               child: Padding(
-            padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
-            child: Text(t.memo),
-          )),
+                padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
+                child: Text(t.memo),
+              )),
         ]));
       }
     });
@@ -87,16 +115,30 @@ class TransactionListState extends State<TransactionList> {
                 )));
               },
               body: SizedBox(
-                height: 150,
+                height: 300,
                 child: SingleChildScrollView(
                     child: Table(
+                  columnWidths: const {
+                    0: FixedColumnWidth(40),
+                    1: FixedColumnWidth(40),
+                    2: FixedColumnWidth(100),
+                    3: FixedColumnWidth(80),
+                    4: FixedColumnWidth(80),
+                    5: FixedColumnWidth(100),
+                  },
                   border: TableBorder.all(),
                   children: [
                         TableRow(children: [
                           TableCell(
                               child: Center(
+                                  child: Text(
+                            "Edit",
+                            style: label,
+                          ))),
+                          TableCell(
+                              child: Center(
                             child: Text(
-                              "Transaction ID",
+                              "ID",
                               style: label,
                             ),
                           )),

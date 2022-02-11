@@ -61,7 +61,10 @@ class _MyHomePageState extends State<MyHomePage> {
         memo: "Test Transaction"));
     // Instantiate the different window widgets
     monthSelect = MonthSelect(data: data);
-    transactionList = TransactionList(key: transactionListKey, data: data);
+    transactionList = TransactionList(
+      key: transactionListKey,
+      data: data,
+    );
     setState(() {
       initialized = true;
     });
@@ -85,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       return newTransaction(
                         data: data,
                         updateList:
-                            transactionListKey.currentState!.generateTiles,
+                            transactionListKey.currentState!.generateRows,
                       );
                     });
               },

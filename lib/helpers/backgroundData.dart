@@ -39,7 +39,7 @@ class Transaction {
 
   // Round the double to 2 decimals and return it as a string
   String strAmount() {
-    return amount.toStringAsFixed(2);
+    return "\$ " + amount.toStringAsFixed(2);
   }
 
   @override
