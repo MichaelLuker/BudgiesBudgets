@@ -5,7 +5,7 @@ import 'package:budgies_budgets/widgets/newTransaction.dart';
 import 'package:budgies_budgets/widgets/transactionList.dart';
 import 'package:svg_icon/svg_icon.dart';
 import 'package:budgies_budgets/helpers/backgroundData.dart';
-import 'package:budgies_budgets/widgets/monthSelect.dart';
+import 'package:budgies_budgets/widgets/userAndMonthSelect.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -41,7 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool initialized = false;
   late FinancialData data;
   GlobalKey<TransactionListState> transactionListKey = GlobalKey();
-  late MonthSelect monthSelect;
+  late UserAndMonthSelect userAndMonthSelect;
   late TransactionList transactionList;
 
   // Function to call all the other pieces to recalculate graphs / budgets when
@@ -60,8 +60,11 @@ class _MyHomePageState extends State<MyHomePage> {
     data = FinancialData();
     data.startDate = DateTime.now().subtract(const Duration(days: 30));
     data.endDate = DateTime.now();
+    data.users.add("Mike");
+    data.currentUser = "Mike";
     // Add an initial test transaction to display
     data.allTransactions.add(Transaction.withValues(
+        user: "Mike",
         id: 0,
         date: DateTime.now(),
         category: Category.Personal,
@@ -69,7 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
         amount: -100,
         memo: "Test Transaction"));
     // Instantiate the different window widgets
-    monthSelect = MonthSelect(
+    userAndMonthSelect = UserAndMonthSelect(
       data: data,
       recalculate: recalculate,
     );
@@ -103,7 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: SingleChildScrollView(
                 child: ListBody(
                   children: [
-                    monthSelect,
+                    userAndMonthSelect,
                     transactionList,
                   ],
                 ),

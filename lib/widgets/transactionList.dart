@@ -24,6 +24,7 @@ class TransactionListState extends State<TransactionList> {
   TransactionListState(
       {Key? key, required this.data, required this.recalculate});
   bool expanded = true;
+  bool confirmDelete = false;
   List<TableRow> rows = [];
   final TextStyle label = const TextStyle(color: Colors.amber);
   final TextStyle stringValue = const TextStyle(color: Colors.lightBlueAccent);
@@ -59,13 +60,47 @@ class TransactionListState extends State<TransactionList> {
           TableCell(
               child: IconButton(
                   onPressed: () {
-                    data.allTransactions.remove(t);
-                    generateRows();
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: Text("Confirm User Deletion"),
+                            content: Text(
+                                "Please confirm that the transaction should be deleted...\n\n${t.toString()}"),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text(
+                                    "Cancel",
+                                    style: TextStyle(color: Colors.redAccent),
+                                  )),
+                              TextButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      confirmDelete = true;
+                                    });
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text(
+                                    "Confirm",
+                                    style: TextStyle(
+                                        color: Colors.lightGreenAccent),
+                                  ))
+                            ],
+                          );
+                        }).then((e) {
+                      if (confirmDelete) {
+                        data.allTransactions.remove(t);
+                        generateRows();
+                        setState(() {
+                          confirmDelete = false;
+                        });
+                      }
+                    });
                   },
                   icon: Icon(Icons.delete, size: 18))),
-          TableCell(
-              verticalAlignment: TableCellVerticalAlignment.middle,
-              child: Center(child: Text(t.id.toString()))),
           TableCell(
               verticalAlignment: TableCellVerticalAlignment.middle,
               child: Center(child: Text(formatDate(t.date)))),
@@ -131,7 +166,7 @@ class TransactionListState extends State<TransactionList> {
                     child: Table(
                   columnWidths: const {
                     0: FixedColumnWidth(40),
-                    1: FixedColumnWidth(40),
+                    1: FixedColumnWidth(80),
                     2: FixedColumnWidth(100),
                     3: FixedColumnWidth(80),
                     4: FixedColumnWidth(80),
@@ -152,13 +187,6 @@ class TransactionListState extends State<TransactionList> {
                             "Delete",
                             style: label,
                           ))),
-                          TableCell(
-                              child: Center(
-                            child: Text(
-                              "ID",
-                              style: label,
-                            ),
-                          )),
                           TableCell(
                               child: Center(
                             child: Text(

@@ -29,10 +29,12 @@ class Transaction {
   Account account = Account.Visa;
   double amount = 0.0;
   String memo = "";
+  String user = "";
 
   Transaction();
   Transaction.withValues(
-      {required this.id,
+      {required this.user,
+      required this.id,
       required this.date,
       required this.category,
       required this.account,
@@ -46,7 +48,7 @@ class Transaction {
 
   @override
   String toString() {
-    return "Date: ${formatDate(date)} | Category: ${category.toString().split(".")[1]} | Account: ${account.toString().split(".")[1]} | Amount: ${strAmount()} | Memo: $memo\n";
+    return "User: $user | Date: ${formatDate(date)} | Category: ${category.toString().split(".")[1]} | Account: ${account.toString().split(".")[1]} | Amount: ${strAmount()} | Memo: $memo\n";
   }
 }
 
@@ -56,6 +58,8 @@ class FinancialData {
   Map<Account, double> accounts = {};
   List<Transaction> allTransactions = [];
   List<Transaction> filteredTransactions = [];
+  List<String> users = [];
+  String currentUser = "";
 
   // Sort the filtered list of transactions
   //   The beginning of the list will be the most recent(end date), the end of the list will
@@ -68,7 +72,8 @@ class FinancialData {
     for (Transaction t in allTransactions) {
       // Allow it to be on the actual day of the start or end
       if (t.date.isAfter(startDate.subtract(Duration(days: 1))) &&
-          t.date.isBefore(endDate.add(Duration(days: 1)))) {
+          t.date.isBefore(endDate.add(Duration(days: 1))) &&
+          t.user == currentUser) {
         filteredTransactions.add(t);
       }
     }
