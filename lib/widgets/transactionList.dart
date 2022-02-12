@@ -36,7 +36,7 @@ class TransactionListState extends State<TransactionList> {
   }
 
   void generateRows() {
-    data.sort();
+    data.sortTransactions();
     setState(() {
       rows = [];
       int count = 0;
@@ -51,26 +51,29 @@ class TransactionListState extends State<TransactionList> {
                     : Color.fromARGB(255, 80, 80, 80)),
             children: [
               TableCell(
-                  child: IconButton(
+                  child: Column(
+                children: [
+                  IconButton(
                       onPressed: () {
                         showDialog(
                             context: context,
                             builder: (BuildContext context) {
                               return editTransaction(
-                                transaction: t,
-                                updateList: generateRows,
-                              );
+                                  transaction: t,
+                                  updateList: generateRows,
+                                  data: data);
                             });
                       },
-                      icon: Icon(Icons.edit, size: 18))),
-              TableCell(
-                  child: IconButton(
+                      icon: Icon(Icons.edit, size: 18)),
+                  IconButton(
+                      onPressed: () {}, icon: Icon(Icons.copy, size: 18)),
+                  IconButton(
                       onPressed: () {
                         showDialog(
                             context: context,
                             builder: (context) {
                               return AlertDialog(
-                                title: Text("Confirm User Deletion"),
+                                title: Text("Confirm Deletion"),
                                 content: Text(
                                     "Please confirm that the transaction should be deleted...\n\n${t.toString()}"),
                                 actions: [
@@ -107,7 +110,9 @@ class TransactionListState extends State<TransactionList> {
                           }
                         });
                       },
-                      icon: Icon(Icons.delete, size: 18))),
+                      icon: Icon(Icons.delete, size: 18))
+                ],
+              )),
               TableCell(
                   verticalAlignment: TableCellVerticalAlignment.middle,
                   child: Center(child: Text(formatDate(t.date)))),
@@ -115,14 +120,7 @@ class TransactionListState extends State<TransactionList> {
                   verticalAlignment: TableCellVerticalAlignment.middle,
                   child: Center(
                       child: Text(
-                    t.category.toString().split(".")[1],
-                    style: stringValue,
-                  ))),
-              TableCell(
-                  verticalAlignment: TableCellVerticalAlignment.middle,
-                  child: Center(
-                      child: Text(
-                    t.account.toString().split(".")[1],
+                    t.account,
                     style: stringValue,
                   ))),
               TableCell(
@@ -141,6 +139,15 @@ class TransactionListState extends State<TransactionList> {
                     padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
                     child: Text(t.memo),
                   )),
+              TableCell(
+                verticalAlignment: TableCellVerticalAlignment.middle,
+                child: IconButton(
+                    onPressed: () {},
+                    icon: Icon(
+                      Icons.image,
+                      size: 18,
+                    )),
+              ),
             ]));
         count++;
       }
@@ -163,25 +170,49 @@ class TransactionListState extends State<TransactionList> {
           ExpansionPanel(
               canTapOnHeader: true,
               headerBuilder: (BuildContext context, bool expanded) {
-                return const ListTile(
-                    title: Center(
-                  child: Text(
-                    "Transactions",
-                    style: TextStyle(color: Color.fromARGB(255, 100, 255, 218)),
-                  ),
-                ));
+                return ListTile(
+                    title: DropdownButton<String>(
+                        alignment: Alignment.center,
+                        isExpanded: true,
+                        items: [
+                          DropdownMenuItem<String>(
+                              alignment: Alignment.center,
+                              value: "Transactions",
+                              child: Text(
+                                "Transactions",
+                                style: const TextStyle(
+                                    color: Colors.lightBlueAccent),
+                              )),
+                          DropdownMenuItem<String>(
+                              alignment: Alignment.center,
+                              value: "Subscriptions",
+                              child: Text(
+                                "Subscriptions",
+                                style: const TextStyle(
+                                    color: Colors.lightBlueAccent),
+                              )),
+                        ],
+                        value: "Transactions",
+                        onChanged: (value) {
+                          setState(() {
+                            if (value != null) {
+                              data.currentUser = value;
+                              recalculate(regenerateRows: true);
+                            }
+                          });
+                        }));
               },
               body: SizedBox(
                 height: 300,
                 child: SingleChildScrollView(
                     child: Table(
                   columnWidths: const {
-                    0: FixedColumnWidth(40),
-                    1: FixedColumnWidth(80),
-                    2: FixedColumnWidth(100),
-                    3: FixedColumnWidth(120),
-                    4: FixedColumnWidth(80),
-                    5: FixedColumnWidth(100),
+                    0: FixedColumnWidth(32),
+                    // 1: FixedColumnWidth(32),
+                    // 2: FixedColumnWidth(100),
+                    // 3: FixedColumnWidth(120),
+                    // 4: FixedColumnWidth(80),
+                    5: FixedColumnWidth(32),
                   },
                   border: TableBorder.all(),
                   children: [
@@ -189,26 +220,13 @@ class TransactionListState extends State<TransactionList> {
                           TableCell(
                               child: Center(
                                   child: Text(
-                            "Edit",
-                            style: label,
-                          ))),
-                          TableCell(
-                              child: Center(
-                                  child: Text(
-                            "Delete",
+                            "",
                             style: label,
                           ))),
                           TableCell(
                               child: Center(
                             child: Text(
                               "Date",
-                              style: label,
-                            ),
-                          )),
-                          TableCell(
-                              child: Center(
-                            child: Text(
-                              "Category",
                               style: label,
                             ),
                           )),
@@ -236,7 +254,13 @@ class TransactionListState extends State<TransactionList> {
                               style: label,
                               textAlign: TextAlign.left,
                             ),
-                          ))
+                          )),
+                          TableCell(
+                              child: Center(
+                                  child: Text(
+                            "",
+                            style: label,
+                          ))),
                         ])
                       ] +
                       rows,

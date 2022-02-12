@@ -8,19 +8,27 @@ import 'package:budgies_budgets/helpers/functions.dart';
 class editTransaction extends StatefulWidget {
   final Transaction transaction;
   final Function updateList;
+  final FinancialData data;
   const editTransaction(
-      {Key? key, required this.transaction, required this.updateList})
+      {Key? key,
+      required this.transaction,
+      required this.updateList,
+      required this.data})
       : super(key: key);
 
   @override
-  _editTransactionState createState() =>
-      _editTransactionState(transaction: transaction, updateList: updateList);
+  _editTransactionState createState() => _editTransactionState(
+      transaction: transaction, updateList: updateList, data: data);
 }
 
 class _editTransactionState extends State<editTransaction> {
   final Transaction transaction;
   final Function updateList;
-  _editTransactionState({required this.transaction, required this.updateList});
+  final FinancialData data;
+  _editTransactionState(
+      {required this.transaction,
+      required this.updateList,
+      required this.data});
   TextEditingController amountController = TextEditingController();
   TextEditingController memoController = TextEditingController();
 
@@ -139,13 +147,13 @@ class _editTransactionState extends State<editTransaction> {
                 const Flexible(flex: 0, child: Text("Account:    ")),
                 Expanded(
                     flex: 3,
-                    child: DropdownButton<Account>(
+                    child: DropdownButton<String>(
                         isExpanded: true,
-                        items: Account.values.map((e) {
-                          return DropdownMenuItem<Account>(
-                              value: e,
+                        items: data.accounts.map((e) {
+                          return DropdownMenuItem<String>(
+                              value: e.name,
                               child: Text(
-                                e.toString().split(".")[1],
+                                e.name,
                                 style: const TextStyle(
                                     color: Colors.lightBlueAccent),
                               ));

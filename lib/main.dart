@@ -1,12 +1,14 @@
 // Scaffold of the app, controlls display of everything and initial data load
 import 'dart:developer';
 
+import 'package:budgies_budgets/widgets/accountSelect.dart';
 import 'package:budgies_budgets/widgets/newTransaction.dart';
 import 'package:budgies_budgets/widgets/transactionList.dart';
+import 'package:budgies_budgets/widgets/userSelect.dart';
 import 'package:grizzly_io/io_loader.dart';
 import 'package:svg_icon/svg_icon.dart';
 import 'package:budgies_budgets/helpers/backgroundData.dart';
-import 'package:budgies_budgets/widgets/userAndMonthSelect.dart';
+import 'package:budgies_budgets/widgets/monthSelect.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -42,7 +44,9 @@ class _MyHomePageState extends State<MyHomePage> {
   bool initialized = false;
   late FinancialData data;
   GlobalKey<TransactionListState> transactionListKey = GlobalKey();
-  late UserAndMonthSelect userAndMonthSelect;
+  late UserSelect userSelect;
+  late AccountSelect accountSelect;
+  late MonthSelect monthSelect;
   late TransactionList transactionList;
 
   // Function to call all the other pieces to recalculate graphs / budgets when
@@ -65,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
             user: row[0],
             date: DateTime.parse(row[1]),
             category: categoryFromString(row[2]),
-            account: accountFromString(row[3]),
+            account: row[3],
             amount: double.parse(row[4]),
             memo: row[5]);
         data.allTransactions.add(t);
@@ -84,9 +88,11 @@ class _MyHomePageState extends State<MyHomePage> {
     data.endDate = DateTime.now();
     data.users.add("Mike");
     data.currentUser = "Mike";
-    loadTransactions();
+    //loadTransactions();
     // Instantiate the different window widgets
-    userAndMonthSelect = UserAndMonthSelect(
+    userSelect = UserSelect(data: data, recalculate: recalculate);
+    accountSelect = AccountSelect(data: data, recalculate: recalculate);
+    monthSelect = MonthSelect(
       data: data,
       recalculate: recalculate,
     );
@@ -115,14 +121,18 @@ class _MyHomePageState extends State<MyHomePage> {
                     });
               },
             ),
-            body: Padding(
-              padding: const EdgeInsets.fromLTRB(0, 0, 0, 80),
-              child: SingleChildScrollView(
-                child: ListBody(
-                  children: [
-                    userAndMonthSelect,
-                    transactionList,
-                  ],
+            body: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 80),
+                child: SingleChildScrollView(
+                  child: ListBody(
+                    children: [
+                      userSelect,
+                      accountSelect,
+                      monthSelect,
+                      transactionList,
+                    ],
+                  ),
                 ),
               ),
             ),

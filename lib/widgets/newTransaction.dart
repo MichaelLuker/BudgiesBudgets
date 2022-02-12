@@ -161,13 +161,13 @@ class _newTransactionState extends State<newTransaction> {
                       const Flexible(flex: 0, child: Text("Account:    ")),
                       Expanded(
                           flex: 3,
-                          child: DropdownButton<Account>(
+                          child: DropdownButton<String>(
                               isExpanded: true,
-                              items: Account.values.map((e) {
-                                return DropdownMenuItem<Account>(
-                                    value: e,
+                              items: data.accounts.map((e) {
+                                return DropdownMenuItem<String>(
+                                    value: e.name,
                                     child: Text(
-                                      e.toString().split(".")[1],
+                                      e.name,
                                       style: const TextStyle(
                                           color: Colors.lightBlueAccent),
                                     ));
@@ -205,7 +205,7 @@ class _newTransactionState extends State<newTransaction> {
                       Expanded(
                           flex: 3,
                           child: TextField(
-                            keyboardType: TextInputType.number,
+                            keyboardType: TextInputType.text,
                             controller: memoController,
                             style:
                                 const TextStyle(color: Colors.lightBlueAccent),
@@ -236,7 +236,7 @@ class _newTransactionState extends State<newTransaction> {
                                     user: row[0],
                                     date: DateTime.parse(row[1]),
                                     category: categoryFromString(row[2]),
-                                    account: accountFromString(row[3]),
+                                    account: row[3],
                                     amount: double.parse(row[4]),
                                     memo: row[5]);
                                 log(t.toString());

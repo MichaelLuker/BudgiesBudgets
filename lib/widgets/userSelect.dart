@@ -5,25 +5,24 @@ import 'package:budgies_budgets/helpers/functions.dart';
 import 'package:flutter/material.dart';
 
 // Lets you select the month / year / date range to use
-class UserAndMonthSelect extends StatefulWidget {
+class UserSelect extends StatefulWidget {
   // Save the current start and end dates
   final FinancialData data;
   final Function recalculate;
 
   // Set dates on creation
-  const UserAndMonthSelect(
-      {Key? key, required this.data, required this.recalculate})
+  const UserSelect({Key? key, required this.data, required this.recalculate})
       : super(key: key);
 
   @override
-  State<UserAndMonthSelect> createState() =>
-      _UserAndMonthSelect(data: data, recalculate: recalculate);
+  State<UserSelect> createState() =>
+      _UserSelect(data: data, recalculate: recalculate);
 }
 
-class _UserAndMonthSelect extends State<UserAndMonthSelect> {
+class _UserSelect extends State<UserSelect> {
   final FinancialData data;
   final Function recalculate;
-  _UserAndMonthSelect({required this.data, required this.recalculate});
+  _UserSelect({required this.data, required this.recalculate});
 
   TextEditingController userController = TextEditingController();
   bool confirmDelete = false;
@@ -110,8 +109,7 @@ class _UserAndMonthSelect extends State<UserAndMonthSelect> {
                                         Expanded(
                                             flex: 3,
                                             child: TextField(
-                                              keyboardType:
-                                                  TextInputType.number,
+                                              keyboardType: TextInputType.text,
                                               controller: userController,
                                               style: const TextStyle(
                                                   color:
@@ -182,40 +180,6 @@ class _UserAndMonthSelect extends State<UserAndMonthSelect> {
               ],
             ),
           ),
-          // Expand the two date widgets more than the icon button, use the function to fill in the date strings
-          Expanded(
-              flex: 9,
-              child:
-                  Center(child: Text("Start: ${formatDate(data.startDate)}"))),
-          Expanded(
-              flex: 9,
-              child: Center(child: Text("End: ${formatDate(data.endDate)}"))),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(0, 0, 16, 0),
-            child: IconButton(
-                onPressed: () {
-                  // Show any day from Epoch until now, have the current range selected
-                  showDateRangePicker(
-                          context: context,
-                          firstDate: DateTime.fromMillisecondsSinceEpoch(0),
-                          lastDate: DateTime.now(),
-                          initialDateRange: DateTimeRange(
-                              start: data.startDate, end: data.endDate))
-                      .then((value) {
-                    // If the save button was clicked update the values, otherwise do nothing
-                    if (value != null) {
-                      setState(() {
-                        data.startDate = value.start;
-                        data.endDate = value.end;
-                        recalculate(regenerateRows: true);
-                      });
-                    }
-                  });
-                },
-                icon: const Icon(
-                  Icons.calendar_today_rounded,
-                )),
-          )
         ],
       ),
     );

@@ -5,18 +5,21 @@ import 'package:flutter/material.dart';
 
 // Different categories that a transaction can be
 enum Category {
-  Housing,
-  Transportation,
-  Food,
-  Utilities,
-  Insurance,
-  Medical,
-  Savings,
-  Personal,
-  Entertainment,
-  Miscellaneous,
-  Salary,
-  Transfer
+  Housing, // Icons.home
+  Transportation, // Icons.commute
+  Food, // Icons.store or Icons.shopping_bag or Icons.shopping_basket
+  Utilities, // Icons.outlet
+  Insurance, // Icons.assignment
+  Medical, // Icons.favorite
+  Savings, // Icons.savings
+  Personal, // Icons.face or
+  Entertainment, // Icons.extension or icons.rocket_launch or icons.rowing
+  Miscellaneous, // Icons.book
+  Income, // Icons.paid or Icons.work
+  Transfer, // Icons.sync_alt
+  Giftcard, // Icons.card_giftcard
+  Fee, // Icons.paid
+  Subscription // Icons.autorenew
 }
 
 Category categoryFromString(String s) {
@@ -42,7 +45,7 @@ Category categoryFromString(String s) {
     case "Miscellaneous":
       return Category.Miscellaneous;
     case "Salary":
-      return Category.Salary;
+      return Category.Income;
     case "Transfer":
       return Category.Transfer;
     default:
@@ -50,31 +53,23 @@ Category categoryFromString(String s) {
   }
 }
 
-// Different accounts that transactions can pull from
-enum Account { Checking, Savings, Visa, Giftcard }
-
-Account accountFromString(String s) {
-  switch (s) {
-    case "Checking":
-      return Account.Checking;
-    case "Savings":
-      return Account.Savings;
-    case "Visa":
-      return Account.Visa;
-    case "Giftcard":
-      return Account.Giftcard;
-    default:
-      return Account.Visa;
-  }
+class Account {
+  String name = "Visa";
+  double balance = 0.00;
+  bool isGiftcard = false;
+  Account();
+  Account.withValues({
+    required this.name,
+    required this.balance,
+    required this.isGiftcard,
+  });
 }
-
-List<String> GiftAccounts = [];
 
 class Transaction {
   int id = -1;
   DateTime date = DateTime.now();
   Category category = Category.Personal;
-  Account account = Account.Visa;
+  String account = "Visa";
   double amount = 0.0;
   String memo = "";
   String user = "";
@@ -95,23 +90,50 @@ class Transaction {
 
   @override
   String toString() {
-    return "User: $user | Date: ${formatDate(date)} | Category: ${category.toString().split(".")[1]} | Account: ${account.toString().split(".")[1]} | Amount: ${strAmount()} | Memo: $memo\n";
+    return "User: $user | Date: ${formatDate(date)} | Category: ${category.toString().split(".")[1]} | Account: $account | Amount: ${strAmount()} | Memo: $memo\n";
   }
 }
 
 class FinancialData {
   late DateTime startDate;
   late DateTime endDate;
-  Map<Account, double> accounts = {};
+  List<Account> accounts = [
+    Account.withValues(name: "Checking", balance: 0.00, isGiftcard: false),
+    Account.withValues(name: "Savings", balance: 0.00, isGiftcard: false),
+    Account.withValues(name: "Visa", balance: 0.00, isGiftcard: false),
+  ];
   List<Transaction> allTransactions = [];
   List<Transaction> filteredTransactions = [];
   List<String> users = [];
   String currentUser = "";
+  String currentAccount = "All";
+
+  // Sorts the non-giftcard accounts by name and the giftcard accounts last
+  void sortAccounts() {
+    List<Account> tempNormal = [];
+    List<Account> tempGiftcards = [];
+
+    // For each account throw it in the appropriate bucket
+    for (Account a in accounts) {
+      if (a.isGiftcard) {
+        tempGiftcards.add(a);
+      } else {
+        tempNormal.add(a);
+      }
+    }
+
+    // Sort the individual lists
+    tempNormal.sort((Account a, Account b) => a.name.compareTo(b.name));
+    tempGiftcards.sort((Account a, Account b) => a.name.compareTo(b.name));
+
+    // Combine lists back
+    accounts = tempNormal + tempGiftcards;
+  }
 
   // Sort the filtered list of transactions
   //   The beginning of the list will be the most recent(end date), the end of the list will
   //   be the oldest date in the range (start date)
-  void sort() {
+  void sortTransactions() {
     // Start with an empty list
     filteredTransactions = [];
 
@@ -120,7 +142,8 @@ class FinancialData {
       // Allow it to be on the actual day of the start or end
       if (t.date.isAfter(startDate.subtract(Duration(days: 1))) &&
           t.date.isBefore(endDate.add(Duration(days: 1))) &&
-          t.user == currentUser) {
+          t.user == currentUser &&
+          (t.account == currentAccount || currentAccount == "All")) {
         filteredTransactions.add(t);
       }
     }
