@@ -31,6 +31,8 @@ class _editTransactionState extends State<editTransaction> {
       required this.data});
   TextEditingController amountController = TextEditingController();
   TextEditingController memoController = TextEditingController();
+  DateTime newDate = DateTime.now();
+  bool confirmDelete = false;
 
   @override
   void initState() {
@@ -50,6 +52,114 @@ class _editTransactionState extends State<editTransaction> {
                 const BoxDecoration(border: Border(bottom: BorderSide())),
             child: const Center(child: Text("Edit Transaction Details"))),
         actions: [
+          IconButton(
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text("Confirm Deletion"),
+                        content: Text(
+                            "Please confirm that the transaction should be deleted...\n\n${transaction.toString()}"),
+                        actions: [
+                          TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text(
+                                "Cancel",
+                                style: TextStyle(color: Colors.redAccent),
+                              )),
+                          TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  confirmDelete = true;
+                                });
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text(
+                                "Confirm",
+                                style:
+                                    TextStyle(color: Colors.lightGreenAccent),
+                              ))
+                        ],
+                      );
+                    }).then((e) {
+                  if (confirmDelete) {
+                    data.allTransactions.remove(transaction);
+                    updateList();
+                    setState(() {
+                      confirmDelete = false;
+                    });
+                    Navigator.of(context).pop();
+                  }
+                });
+              },
+              icon: const Icon(Icons.delete, size: 18)),
+          IconButton(
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: const Text("Enter New Date"),
+                        content: SizedBox(
+                          width: 300,
+                          height: 300,
+                          child: CalendarDatePicker(
+                              initialDate: data.endDate,
+                              firstDate: DateTime.fromMillisecondsSinceEpoch(0),
+                              lastDate: DateTime.now(),
+                              onDateChanged: (e) {
+                                setState(() {
+                                  newDate = e;
+                                });
+                              }),
+                        ),
+                        actions: [
+                          TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text(
+                                "Cancel",
+                                style: TextStyle(color: Colors.redAccent),
+                              )),
+                          TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  confirmDelete = true;
+                                });
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text(
+                                "Confirm",
+                                style:
+                                    TextStyle(color: Colors.lightGreenAccent),
+                              ))
+                        ],
+                      );
+                    }).then((e) {
+                  Transaction newTransaction = Transaction.withValues(
+                      user: transaction.user,
+                      date: newDate,
+                      category: transaction.category,
+                      account: transaction.account,
+                      amount: transaction.amount,
+                      memo: transaction.memo);
+
+                  setState(() {
+                    data.allTransactions.add(newTransaction);
+                    confirmDelete = false;
+                  });
+                  updateList();
+                  Navigator.of(context).pop();
+                });
+              },
+              icon: const Icon(
+                Icons.copy,
+                size: 18,
+              )),
           TextButton(
               onPressed: () {
                 Navigator.of(context).pop();

@@ -64,53 +64,7 @@ class TransactionListState extends State<TransactionList> {
                                   data: data);
                             });
                       },
-                      icon: const Icon(Icons.edit, size: 18)),
-                  IconButton(
-                      onPressed: () {}, icon: const Icon(Icons.copy, size: 18)),
-                  IconButton(
-                      onPressed: () {
-                        showDialog(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                title: const Text("Confirm Deletion"),
-                                content: Text(
-                                    "Please confirm that the transaction should be deleted...\n\n${t.toString()}"),
-                                actions: [
-                                  TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: const Text(
-                                        "Cancel",
-                                        style:
-                                            TextStyle(color: Colors.redAccent),
-                                      )),
-                                  TextButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          confirmDelete = true;
-                                        });
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: const Text(
-                                        "Confirm",
-                                        style: TextStyle(
-                                            color: Colors.lightGreenAccent),
-                                      ))
-                                ],
-                              );
-                            }).then((e) {
-                          if (confirmDelete) {
-                            data.allTransactions.remove(t);
-                            generateRows();
-                            setState(() {
-                              confirmDelete = false;
-                            });
-                          }
-                        });
-                      },
-                      icon: const Icon(Icons.delete, size: 18))
+                      icon: const Icon(Icons.menu, size: 18)),
                 ],
               )),
               TableCell(
@@ -128,7 +82,7 @@ class TransactionListState extends State<TransactionList> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(0, 0, 8.0, 0),
                     child: Text(
-                      t.strAmount(),
+                      "\$ " + t.strAmount(),
                       style: numValue,
                       textAlign: TextAlign.end,
                     ),
