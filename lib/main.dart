@@ -1,5 +1,6 @@
 // Scaffold of the app, controlls display of everything and initial data load
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:budgies_budgets/widgets/accountSelect.dart';
 import 'package:budgies_budgets/widgets/newTransaction.dart';
@@ -13,6 +14,17 @@ import 'package:flutter/material.dart';
 
 void main() {
   runApp(const MyApp());
+}
+
+class Spacer extends StatelessWidget {
+  const Spacer({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 30,
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -122,18 +134,26 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             body: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 0, 0, 86),
-                child: SingleChildScrollView(
-                  child: ListBody(
-                    children: [
-                      userSelect,
-                      accountSelect,
-                      monthSelect,
-                      transactionList,
-                    ],
-                  ),
-                ),
+              child: Column(
+                children: [
+                  // Header elements that should always stay visible
+                  userSelect,
+                  accountSelect,
+                  monthSelect,
+                  // Scrolling on the panels
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 86),
+                      child: SingleChildScrollView(
+                          child: ListBody(
+                        children: [
+                          transactionList,
+                          const Spacer(),
+                        ],
+                      )),
+                    ),
+                  )
+                ],
               ),
             ),
           )

@@ -2,7 +2,6 @@
 //   basis of all the data stored
 
 import 'package:budgies_budgets/helpers/backgroundData.dart';
-import 'package:budgies_budgets/helpers/functions.dart';
 import 'package:budgies_budgets/widgets/editTransaction.dart';
 import 'package:flutter/material.dart';
 
@@ -51,21 +50,19 @@ class TransactionListState extends State<TransactionList> {
                     : const Color.fromARGB(255, 80, 80, 80)),
             children: [
               TableCell(
-                  child: Column(
-                children: [
-                  IconButton(
-                      onPressed: () {
-                        showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return editTransaction(
-                                  transaction: t,
-                                  updateList: generateRows,
-                                  data: data);
-                            });
-                      },
-                      icon: const Icon(Icons.menu, size: 18)),
-                ],
+                  child: Center(
+                child: IconButton(
+                    onPressed: () {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return editTransaction(
+                                transaction: t,
+                                updateList: generateRows,
+                                data: data);
+                          });
+                    },
+                    icon: const Icon(Icons.menu, size: 18)),
               )),
               TableCell(
                   verticalAlignment: TableCellVerticalAlignment.middle,
@@ -89,18 +86,34 @@ class TransactionListState extends State<TransactionList> {
                   )),
               TableCell(
                   verticalAlignment: TableCellVerticalAlignment.middle,
+                  child: Center(child: categoryToIcon(t.category, 18))),
+              TableCell(
+                  verticalAlignment: TableCellVerticalAlignment.middle,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
-                    child: Text(t.memo),
-                  )),
+                      padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
+                      child: Text(t.memo))),
               TableCell(
                 verticalAlignment: TableCellVerticalAlignment.middle,
-                child: IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.image,
-                      size: 18,
-                    )),
+                child: (t.memoImage != null)
+                    ? IconButton(
+                        onPressed: () {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(actions: [
+                                  TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text("Close"))
+                                ], content: t.memoImage);
+                              });
+                        },
+                        icon: Icon(
+                          Icons.image,
+                          size: 18,
+                        ))
+                    : Container(),
               ),
             ]));
         count++;
@@ -138,86 +151,89 @@ class TransactionListState extends State<TransactionList> {
                               )),
                           DropdownMenuItem<String>(
                               alignment: Alignment.center,
-                              value: "Subscriptions",
+                              value: "Subscription",
                               child: Text(
-                                "Subscriptions",
+                                "Subscription",
                                 style: TextStyle(color: Colors.lightBlueAccent),
                               )),
                         ],
-                        value: "Transactions",
+                        value: data.categoryFilter,
                         onChanged: (value) {
                           setState(() {
                             if (value != null) {
-                              data.currentUser = value;
+                              data.categoryFilter = value;
                               recalculate(regenerateRows: true);
                             }
                           });
                         }));
               },
-              body: SizedBox(
-                height: 500,
-                child: SingleChildScrollView(
-                    child: Table(
-                  columnWidths: const {
-                    0: FixedColumnWidth(32),
-                    // 1: FixedColumnWidth(32),
-                    // 2: FixedColumnWidth(100),
-                    // 3: FixedColumnWidth(120),
-                    // 4: FixedColumnWidth(80),
-                    5: FixedColumnWidth(32),
-                  },
-                  border: TableBorder.all(),
-                  children: [
-                        TableRow(children: [
-                          TableCell(
-                              child: Center(
-                                  child: Text(
-                            "",
+              body: SingleChildScrollView(
+                  child: Table(
+                columnWidths: const {
+                  0: FixedColumnWidth(32),
+                  4: FixedColumnWidth(32),
+                  6: FixedColumnWidth(32),
+                },
+                border: TableBorder.all(),
+                children: [
+                      TableRow(children: [
+                        TableCell(
+                            child: Center(
+                                child: Text(
+                          "",
+                          style: label,
+                        ))),
+                        TableCell(
+                            child: Center(
+                          child: Text(
+                            "Date",
                             style: label,
-                          ))),
-                          TableCell(
-                              child: Center(
-                            child: Text(
-                              "Date",
-                              style: label,
-                            ),
-                          )),
-                          TableCell(
-                              child: Center(
-                            child: Text(
-                              "Account",
-                              style: label,
-                            ),
-                          )),
-                          TableCell(
-                              child: Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 0, 8.0, 0),
-                            child: Text(
-                              "Amount",
-                              style: label,
-                              textAlign: TextAlign.end,
-                            ),
-                          )),
-                          TableCell(
-                              child: Padding(
-                            padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
-                            child: Text(
-                              "Memo",
-                              style: label,
-                              textAlign: TextAlign.left,
-                            ),
-                          )),
-                          TableCell(
-                              child: Center(
-                                  child: Text(
-                            "",
+                          ),
+                        )),
+                        TableCell(
+                            child: Center(
+                          child: Text(
+                            "Acct",
                             style: label,
-                          ))),
-                        ])
-                      ] +
-                      rows,
-                )),
-              ),
+                          ),
+                        )),
+                        TableCell(
+                            child: Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 8.0, 0),
+                          child: Text(
+                            "Amount",
+                            style: label,
+                            textAlign: TextAlign.end,
+                          ),
+                        )),
+                        TableCell(
+                            child: Padding(
+                          padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
+                          child: Text(
+                            "Cat",
+                            style: label,
+                            textAlign: TextAlign.left,
+                          ),
+                        )),
+                        TableCell(
+                            child: Padding(
+                          padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
+                          child: Text(
+                            "Memo",
+                            style: label,
+                            textAlign: TextAlign.left,
+                          ),
+                        )),
+                        TableCell(
+                            child: Center(
+                                child: Text(
+                          "",
+                          style: label,
+                        ))),
+                      ])
+                    ] +
+                    rows,
+              )),
               isExpanded: expanded)
         ]);
   }

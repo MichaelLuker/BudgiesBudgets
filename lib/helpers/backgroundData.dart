@@ -1,7 +1,9 @@
 // Objects to be able to store all the data for the different widgets to interact with
 // ignore_for_file: constant_identifier_names
-import 'package:budgies_budgets/helpers/functions.dart';
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
+import 'package:svg_icon/svg_icon.dart';
 
 // Different categories that a transaction can be
 enum Category {
@@ -20,6 +22,43 @@ enum Category {
   Giftcard, // Icons.card_giftcard
   Fee, // Icons.paid
   Subscription // Icons.autorenew
+}
+
+Widget categoryToIcon(Category c, double size) {
+  switch (c) {
+    case Category.Housing:
+      return Icon(Icons.home, size: size);
+    case Category.Transportation:
+      return Icon(Icons.commute);
+    case Category.Food:
+      return Icon(Icons.shopping_cart, size: size);
+    case Category.Utilities:
+      return Icon(Icons.outlet, size: size);
+    case Category.Insurance:
+      return Icon(Icons.assignment, size: size);
+    case Category.Medical:
+      return Icon(Icons.favorite, size: size);
+    case Category.Savings:
+      return Icon(Icons.savings, size: size);
+    case Category.Personal:
+      return Icon(Icons.face, size: size);
+    case Category.Entertainment:
+      return SvgIcon("icons/rocket_launch_white_24dp.svg");
+    case Category.Miscellaneous:
+      return Icon(Icons.book, size: size);
+    case Category.Income:
+      return Icon(Icons.paid, size: size);
+    case Category.Transfer:
+      return Icon(Icons.sync_alt, size: size);
+    case Category.Giftcard:
+      return Icon(Icons.card_giftcard, size: size);
+    case Category.Fee:
+      return Icon(Icons.paid, size: size);
+    case Category.Subscription:
+      return Icon(Icons.autorenew, size: size);
+    default:
+      return Icon(Icons.home, size: size);
+  }
 }
 
 Category categoryFromString(String s) {
@@ -44,10 +83,16 @@ Category categoryFromString(String s) {
       return Category.Entertainment;
     case "Miscellaneous":
       return Category.Miscellaneous;
-    case "Salary":
+    case "Income":
       return Category.Income;
     case "Transfer":
       return Category.Transfer;
+    case "Giftcard":
+      return Category.Giftcard;
+    case "Fee":
+      return Category.Fee;
+    case "Subscription":
+      return Category.Subscription;
     default:
       return Category.Personal;
   }
@@ -73,6 +118,7 @@ class Transaction {
   double amount = 0.0;
   String memo = "";
   String user = "";
+  Image? memoImage;
 
   Transaction();
   Transaction.withValues(
@@ -94,6 +140,42 @@ class Transaction {
   }
 }
 
+String monthString(int n) {
+  switch (n) {
+    case 1:
+      return "Jan";
+    case 2:
+      return "Feb";
+    case 3:
+      return "Mar";
+    case 4:
+      return "Apr";
+    case 5:
+      return "May";
+    case 6:
+      return "Jun";
+    case 7:
+      return "Jul";
+    case 8:
+      return "Aug";
+    case 9:
+      return "Sep";
+    case 10:
+      return "Oct";
+    case 11:
+      return "Nov";
+    case 12:
+      return "Dec";
+    default:
+      return "Unknown";
+  }
+}
+
+// Returns a string of the date time in the format MMM DD YYYY like Feb 09 2022
+String formatDate(DateTime d) {
+  return "${monthString(d.month)} ${(d.day < 10) ? "0" + d.day.toString() : d.day} ${d.year}";
+}
+
 class FinancialData {
   late DateTime startDate;
   late DateTime endDate;
@@ -107,6 +189,7 @@ class FinancialData {
   List<String> users = [];
   String currentUser = "";
   String currentAccount = "All";
+  String categoryFilter = "Transactions";
 
   // Sorts the non-giftcard accounts by name and the giftcard accounts last
   void sortAccounts() {
@@ -143,7 +226,9 @@ class FinancialData {
       if (t.date.isAfter(startDate.subtract(Duration(days: 1))) &&
           t.date.isBefore(endDate.add(Duration(days: 1))) &&
           t.user == currentUser &&
-          (t.account == currentAccount || currentAccount == "All")) {
+          (t.account == currentAccount || currentAccount == "All") &&
+          (t.category == categoryFromString(categoryFilter) ||
+              categoryFilter == "Transactions")) {
         filteredTransactions.add(t);
       }
     }

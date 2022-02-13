@@ -1,9 +1,11 @@
 // All the parts for filling out details for a new transaction
 import 'dart:developer';
+import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:budgies_budgets/helpers/backgroundData.dart';
-import 'package:budgies_budgets/helpers/functions.dart';
+import 'package:image_picker/image_picker.dart';
 
 class editTransaction extends StatefulWidget {
   final Transaction transaction;
@@ -33,6 +35,7 @@ class _editTransactionState extends State<editTransaction> {
   TextEditingController memoController = TextEditingController();
   DateTime newDate = DateTime.now();
   bool confirmDelete = false;
+  Image? transactionImage;
 
   @override
   void initState() {
@@ -176,6 +179,12 @@ class _editTransactionState extends State<editTransaction> {
                   transaction.amount = transaction.amount;
                 }
                 transaction.memo = memoController.text;
+                if (transactionImage != null) {
+                  transaction.memoImage = transactionImage;
+                  setState(() {
+                    transactionImage = null;
+                  });
+                }
                 updateList();
                 Navigator.of(context).pop();
               },
@@ -303,6 +312,67 @@ class _editTransactionState extends State<editTransaction> {
                       keyboardType: TextInputType.number,
                       controller: memoController,
                       style: const TextStyle(color: Colors.lightBlueAccent),
+                    )),
+              ],
+            ),
+            // Optional image associated with a transaction
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Flexible(flex: 0, child: Text("Image:      ")),
+                Expanded(
+                    flex: 3,
+                    child: Row(
+                      children: [
+                        (transaction.memoImage != null ||
+                                transactionImage != null)
+                            ? Expanded(
+                                child: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        transactionImage = null;
+                                        transaction.memoImage = null;
+                                      });
+                                    },
+                                    icon: Icon(Icons.delete)),
+                              )
+                            : Container(),
+                        Expanded(
+                          child: IconButton(
+                              onPressed: () async {
+                                FilePickerResult? file =
+                                    await FilePicker.platform.pickFiles();
+                                if (file != null) {
+                                  String filePath =
+                                      file.files[0].path.toString();
+                                  transactionImage = Image.file(File(filePath));
+                                }
+                              },
+                              icon: Icon(
+                                Icons.upload_file,
+                              )),
+                        ),
+                        (Platform.isAndroid || Platform.isIOS)
+                            ? Expanded(
+                                child: IconButton(
+                                    onPressed: () async {
+                                      ImagePicker imagePicker = ImagePicker();
+                                      XFile? image =
+                                          await imagePicker.pickImage(
+                                              source: ImageSource.camera);
+                                      if (image != null) {
+                                        setState(() {
+                                          transactionImage =
+                                              Image.file(File(image.path));
+                                        });
+                                      }
+                                    },
+                                    icon: Icon(
+                                      Icons.add_a_photo,
+                                    )),
+                              )
+                            : Container()
+                      ],
                     )),
               ],
             ),
