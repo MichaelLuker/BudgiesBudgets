@@ -21,7 +21,8 @@ enum Category {
   Transfer, // Icons.sync_alt
   Giftcard, // Icons.card_giftcard
   Fee, // Icons.paid
-  Subscription // Icons.autorenew
+  Subscription, // Icons.autorenew
+  Pet, // Icons.pets
 }
 
 Widget categoryToIcon(Category c, double size) {
@@ -56,6 +57,8 @@ Widget categoryToIcon(Category c, double size) {
       return Icon(Icons.paid, size: size);
     case Category.Subscription:
       return Icon(Icons.autorenew, size: size);
+    case Category.Pet:
+      return Icon(Icons.pets);
     default:
       return Icon(Icons.home, size: size);
   }
@@ -93,6 +96,8 @@ Category categoryFromString(String s) {
       return Category.Fee;
     case "Subscription":
       return Category.Subscription;
+    case "Pet":
+      return Category.Pet;
     default:
       return Category.Personal;
   }

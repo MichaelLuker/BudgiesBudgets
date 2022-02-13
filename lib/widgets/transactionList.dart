@@ -25,7 +25,7 @@ class TransactionListState extends State<TransactionList> {
   bool expanded = true;
   bool confirmDelete = false;
   List<TableRow> rows = [];
-  final TextStyle label = const TextStyle(color: Colors.amber);
+  final TextStyle label = const TextStyle(color: Colors.amber, fontSize: 12);
   final TextStyle stringValue = const TextStyle(color: Colors.lightBlueAccent);
 
   @override
@@ -50,20 +50,21 @@ class TransactionListState extends State<TransactionList> {
                     : const Color.fromARGB(255, 80, 80, 80)),
             children: [
               TableCell(
+                  verticalAlignment: TableCellVerticalAlignment.middle,
                   child: Center(
-                child: IconButton(
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return editTransaction(
-                                transaction: t,
-                                updateList: generateRows,
-                                data: data);
-                          });
-                    },
-                    icon: const Icon(Icons.menu, size: 18)),
-              )),
+                    child: IconButton(
+                        onPressed: () {
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return editTransaction(
+                                    transaction: t,
+                                    updateList: generateRows,
+                                    data: data);
+                              });
+                        },
+                        icon: const Icon(Icons.menu, size: 18)),
+                  )),
               TableCell(
                   verticalAlignment: TableCellVerticalAlignment.middle,
                   child: Center(child: Text(formatDate(t.date)))),
@@ -193,7 +194,7 @@ class TransactionListState extends State<TransactionList> {
                         TableCell(
                             child: Center(
                           child: Text(
-                            "Acct",
+                            "Account",
                             style: label,
                           ),
                         )),
@@ -203,17 +204,14 @@ class TransactionListState extends State<TransactionList> {
                           child: Text(
                             "Amount",
                             style: label,
-                            textAlign: TextAlign.end,
+                            textAlign: TextAlign.center,
                           ),
                         )),
                         TableCell(
-                            child: Padding(
-                          padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 0),
-                          child: Text(
-                            "Cat",
-                            style: label,
-                            textAlign: TextAlign.left,
-                          ),
+                            child: Text(
+                          "Type",
+                          style: label,
+                          textAlign: TextAlign.center,
                         )),
                         TableCell(
                             child: Padding(
@@ -221,7 +219,7 @@ class TransactionListState extends State<TransactionList> {
                           child: Text(
                             "Memo",
                             style: label,
-                            textAlign: TextAlign.left,
+                            textAlign: TextAlign.center,
                           ),
                         )),
                         TableCell(
