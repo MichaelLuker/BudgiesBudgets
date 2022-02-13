@@ -38,6 +38,7 @@ dependencies:
   charts_flutter: ^0.12.0
   file_picker: ^4.3.3
   grizzly_io: ^3.0.0
+  flutter_launcher_icons: ^0.9.2
 
 dev_dependencies:
   flutter_test:
@@ -53,6 +54,11 @@ dev_dependencies:
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
+flutter_icons:
+  android: true
+  ios: false
+  image_path: "icons/AppIcon.png"
+
 # The following section is specific to Flutter.
 flutter:
 
@@ -63,7 +69,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - icons/add_card.svg
+    - icons/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

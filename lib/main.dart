@@ -123,7 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             body: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 0, 0, 80),
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 86),
                 child: SingleChildScrollView(
                   child: ListBody(
                     children: [

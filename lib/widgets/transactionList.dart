@@ -47,8 +47,8 @@ class TransactionListState extends State<TransactionList> {
         rows.add(TableRow(
             decoration: BoxDecoration(
                 color: (count % 2 == 0)
-                    ? Color.fromARGB(255, 66, 66, 66)
-                    : Color.fromARGB(255, 80, 80, 80)),
+                    ? const Color.fromARGB(255, 66, 66, 66)
+                    : const Color.fromARGB(255, 80, 80, 80)),
             children: [
               TableCell(
                   child: Column(
@@ -64,16 +64,16 @@ class TransactionListState extends State<TransactionList> {
                                   data: data);
                             });
                       },
-                      icon: Icon(Icons.edit, size: 18)),
+                      icon: const Icon(Icons.edit, size: 18)),
                   IconButton(
-                      onPressed: () {}, icon: Icon(Icons.copy, size: 18)),
+                      onPressed: () {}, icon: const Icon(Icons.copy, size: 18)),
                   IconButton(
                       onPressed: () {
                         showDialog(
                             context: context,
                             builder: (context) {
                               return AlertDialog(
-                                title: Text("Confirm Deletion"),
+                                title: const Text("Confirm Deletion"),
                                 content: Text(
                                     "Please confirm that the transaction should be deleted...\n\n${t.toString()}"),
                                 actions: [
@@ -110,7 +110,7 @@ class TransactionListState extends State<TransactionList> {
                           }
                         });
                       },
-                      icon: Icon(Icons.delete, size: 18))
+                      icon: const Icon(Icons.delete, size: 18))
                 ],
               )),
               TableCell(
@@ -143,7 +143,7 @@ class TransactionListState extends State<TransactionList> {
                 verticalAlignment: TableCellVerticalAlignment.middle,
                 child: IconButton(
                     onPressed: () {},
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.image,
                       size: 18,
                     )),
@@ -174,22 +174,20 @@ class TransactionListState extends State<TransactionList> {
                     title: DropdownButton<String>(
                         alignment: Alignment.center,
                         isExpanded: true,
-                        items: [
+                        items: const [
                           DropdownMenuItem<String>(
                               alignment: Alignment.center,
                               value: "Transactions",
                               child: Text(
                                 "Transactions",
-                                style: const TextStyle(
-                                    color: Colors.lightBlueAccent),
+                                style: TextStyle(color: Colors.lightBlueAccent),
                               )),
                           DropdownMenuItem<String>(
                               alignment: Alignment.center,
                               value: "Subscriptions",
                               child: Text(
                                 "Subscriptions",
-                                style: const TextStyle(
-                                    color: Colors.lightBlueAccent),
+                                style: TextStyle(color: Colors.lightBlueAccent),
                               )),
                         ],
                         value: "Transactions",
@@ -203,7 +201,7 @@ class TransactionListState extends State<TransactionList> {
                         }));
               },
               body: SizedBox(
-                height: 300,
+                height: 500,
                 child: SingleChildScrollView(
                     child: Table(
                   columnWidths: const {
