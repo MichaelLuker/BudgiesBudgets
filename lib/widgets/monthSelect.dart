@@ -52,7 +52,7 @@ class _MonthSelectState extends State<MonthSelect> {
                   showDateRangePicker(
                           context: context,
                           firstDate: DateTime.fromMillisecondsSinceEpoch(0),
-                          lastDate: DateTime.now(),
+                          lastDate: DateTime.now().add(Duration(days: 365)),
                           initialDateRange: DateTimeRange(
                               start: data.startDate, end: data.endDate))
                       .then((value) {

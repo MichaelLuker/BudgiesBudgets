@@ -118,6 +118,20 @@ class Account {
     required this.balance,
     required this.isGiftcard,
   });
+  // Functions for working with json encoding / decoding
+  Account.fromJson(Map<String, dynamic> json)
+      : user = json['user'],
+        name = json['name'],
+        balance = json['balance'],
+        isGiftcard = (json['isGiftcard'] == "true") ? true : false;
+  Map<String, dynamic> toJson() {
+    return {
+      "user": user,
+      "name": name,
+      "balance": balance,
+      "isGiftcard": isGiftcard
+    };
+  }
 }
 
 // Custom Transaction object
@@ -130,6 +144,7 @@ class Transaction {
   double amount = 0.0;
   String memo = "";
   String user = "";
+  String? memoImageKey;
   Image? memoImage;
 
   Transaction();
@@ -140,6 +155,31 @@ class Transaction {
       required this.account,
       required this.amount,
       required this.memo});
+
+  // Functions for working with json encoding / decoding
+  Transaction.fromJson(Map<String, dynamic> json)
+      : guid = json['guid'],
+        date = DateTime.parse(json['date']),
+        category = categoryFromString(json['category']),
+        account = json['account'],
+        amount = json['amount'],
+        memo = json['memo'],
+        user = json['user'],
+        memoImageKey =
+            (json.containsKey("memoImageKey")) ? json['memoImageKey'] : "";
+  Map<String, dynamic> toJson() {
+    return {
+      "guid": guid,
+      "date":
+          "${date.year}-${date.month.toString().padLeft(2, "0")}-${date.day.toString().padLeft(2, "0")}",
+      "category": category.toString().split('.').last,
+      "account": account,
+      "amount": amount,
+      "memo": memo,
+      "user": user,
+      (memoImage != null) ? "memoImageKey" : guid: ""
+    };
+  }
 
   // Round the double to 2 decimals and return it as a string
   String strAmount() {

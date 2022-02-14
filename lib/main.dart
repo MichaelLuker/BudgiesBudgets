@@ -1,7 +1,9 @@
 // Scaffold of the app, controlls display of everything and initial data load
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:budgies_budgets/helpers/backendRequests.dart';
 import 'package:budgies_budgets/widgets/accountSelect.dart';
 import 'package:budgies_budgets/widgets/newTransaction.dart';
 import 'package:budgies_budgets/widgets/transactionList.dart';
@@ -73,7 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void loadTransactions() async {
     // Load my current transaction list
     String filePath =
-        "C:\\Users\\Zhyne\\Documents\\Projects\\BudgiesBudgets\\InitialTransactions.csv";
+        "C:\\Users\\Zhyne\\Documents\\Projects\\BudgiesBudgets\\TestData.csv";
     final csv = await readCsv(filePath);
     setState(() {
       for (List<String> row in csv) {
@@ -84,9 +86,36 @@ class _MyHomePageState extends State<MyHomePage> {
             account: row[3],
             amount: double.parse(row[4]),
             memo: row[5]);
+        t.guid = generateGUID(t);
         data.allTransactions.add(t);
       }
     });
+    // Testing encode / decode
+    // Create the object to be used
+    Map<String, dynamic> jsonObj = {
+      "accounts": data.accounts,
+      "transactions": data.allTransactions,
+      "users": data.users
+    };
+    // Compress it
+    String testCompress = compressData(jsonObj);
+    // Decompress it
+    Map<String, dynamic> testDecompress = decompressData(testCompress);
+    // Make sure the previously loaded data is cleared out
+    data.accounts = [];
+    data.allTransactions = [];
+    data.users = [];
+    data.filteredTransactions = [];
+    // Add back all the accounts, transactions, and users
+    for (Map<String, dynamic> acct in testDecompress['accounts']) {
+      data.accounts.add(Account.fromJson(acct));
+    }
+    for (Map<String, dynamic> tr in testDecompress['transactions']) {
+      data.allTransactions.add(Transaction.fromJson(tr));
+    }
+    for (String u in testDecompress['users']) {
+      data.users.add(u);
+    }
     recalculate(regenerateRows: true);
   }
 
@@ -101,6 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
     data.users.add("Mike");
     data.currentUser = "Mike";
     //loadTransactions();
+
     // Instantiate the different window widgets
     userSelect = UserSelect(data: data, recalculate: recalculate);
     accountSelect = AccountSelect(data: data, recalculate: recalculate);

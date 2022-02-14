@@ -146,7 +146,8 @@ class _newTransactionState extends State<newTransaction> {
                                   initialDate: DateTime.now(),
                                   firstDate:
                                       DateTime.fromMillisecondsSinceEpoch(0),
-                                  lastDate: DateTime.now())
+                                  lastDate:
+                                      DateTime.now().add(Duration(days: 365)))
                               .then((value) {
                             setState(() {
                               if (value != null) {
