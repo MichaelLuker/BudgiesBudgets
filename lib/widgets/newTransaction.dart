@@ -72,6 +72,7 @@ class _newTransactionState extends State<newTransaction> {
                             account: row[3],
                             amount: double.parse(row[4]),
                             memo: row[5]);
+                        t.guid = generateGUID(t);
                         log(t.toString());
                         data.allTransactions.add(t);
                       }
@@ -109,6 +110,7 @@ class _newTransactionState extends State<newTransaction> {
                       transactionImage = null;
                     });
                   }
+                  newTransaction.guid = generateGUID(newTransaction);
                   data.allTransactions.add(newTransaction);
                   updateList();
                   Navigator.of(context).pop();

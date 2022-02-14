@@ -1,6 +1,7 @@
 // Objects to be able to store all the data for the different widgets to interact with
 // ignore_for_file: constant_identifier_names
-import 'dart:ffi';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 
 import 'package:flutter/material.dart';
 import 'package:svg_icon/svg_icon.dart';
@@ -25,6 +26,7 @@ enum Category {
   Pet, // Icons.pets
 }
 
+// Returns an icon depending on what category / size were given
 Widget categoryToIcon(Category c, double size) {
   switch (c) {
     case Category.Housing:
@@ -64,6 +66,7 @@ Widget categoryToIcon(Category c, double size) {
   }
 }
 
+// Returns the category enum from a string
 Category categoryFromString(String s) {
   switch (s) {
     case "Housing":
@@ -103,7 +106,9 @@ Category categoryFromString(String s) {
   }
 }
 
+// Custom Account object
 class Account {
+  String user = "";
   String name = "Visa";
   double balance = 0.00;
   bool isGiftcard = false;
@@ -115,7 +120,9 @@ class Account {
   });
 }
 
+// Custom Transaction object
 class Transaction {
+  String guid = "";
   int id = -1;
   DateTime date = DateTime.now();
   Category category = Category.Personal;
@@ -145,6 +152,14 @@ class Transaction {
   }
 }
 
+// Generates a GUID for the given transaction
+String generateGUID(Transaction t) {
+  String content =
+      "${t.user}${t.date.toString()}${t.category.toString()}${t.account}${t.amount}${t.memo}";
+  return sha256.convert(utf8.encode(content)).toString();
+}
+
+// Turns an int into the 3 char month
 String monthString(int n) {
   switch (n) {
     case 1:
@@ -181,6 +196,8 @@ String formatDate(DateTime d) {
   return "${monthString(d.month)} ${(d.day < 10) ? "0" + d.day.toString() : d.day} ${d.year}";
 }
 
+// Custom object to hold all the financial data (transactions and accounts) that gets used for
+//   filtering and analysis
 class FinancialData {
   late DateTime startDate;
   late DateTime endDate;
