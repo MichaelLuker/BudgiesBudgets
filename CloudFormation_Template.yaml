@@ -60,27 +60,49 @@ Resources:
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"
                 Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${LambdaFunctionName}:*"
-        # - PolicyName: S3_Access
-        #   PolicyDocument:
-        #     Version: "2012-10-17"
-        #     Statement:
-        #       - Effect: Allow
-        #         Action: "Lambda:*"
-        #         Resource: "*"
-        # - PolicyName: Dynamo_Access
-        #   PolicyDocument:
-        #     Version: "2012-10-17"
-        #     Statement:
-        #       - Effect: Allow
-        #         Action: "Lambda:*"
-        #         Resource: "*"      
-        # - PolicyName: SSM_Access
-        #   PolicyDocument:
-        #     Version: "2012-10-17"
-        #     Statement:
-        #       - Effect: Allow
-        #         Action: "Lambda:*"
-        #         Resource: "*"
+        - PolicyName: S3_Access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - "s3:PutObject"
+                  - "s3:AbortMultipartUpload"
+                  - "s3:DeleteObject"
+                  - "s3:CopyObject"
+                  - "s3:GetObject"
+                  - "s3:GetObjectTagging"
+                  - "s3:PutObjectTagging"
+                  - "s3:CreateMultipartUpload"
+                  - "s3:UploadPart"
+                  - "s3:ListMultipartUploads"
+                  - "s3:CompleteMultipartUpload"
+                Resource: !Sub "arn:aws:s3:::${S3ImageBucketName}/*"
+        - PolicyName: Dynamo_Access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - "dynamodb:BatchGetItem"
+                  - "dynamodb:BatchWriteItem"
+                  - "dynamodb:DeleteItem"
+                  - "dynamodb:PutItem"
+                  - "dynamodb:Query"
+                  - "dynamodb:Scan"
+                  - "dynamodb:UpdateItem"
+                  - "dynamodb:UpdateTimeToLive"
+                Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${DynamoTableName}"
+        - PolicyName: SSM_Access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - "ssm:Get*"
+                  - "ssm:List*"
+                  - "ssm:Describe*"
+                Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/budgies-budgets-api-key"
   # Parameter
   APIKeyParameter:
     Type: AWS::SSM::Parameter
@@ -171,4 +193,19 @@ Resources:
         BlockPublicPolicy: true
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
-  # Dynamo table for data
+  # Encrypted Dynamo table for data
+  DataTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: TransactionGUID
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema: 
+        - AttributeName: TransactionGUID
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD_INFREQUENT_ACCESS
+      TableName: !Ref DynamoTableName
