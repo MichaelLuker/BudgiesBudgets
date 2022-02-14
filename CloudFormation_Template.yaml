@@ -1,0 +1,174 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Template to create the serverless backend for BudgiesBudgets
+Parameters:
+  APIKey:
+    Type: String
+    Description: Key for accessing API gateway
+    NoEcho: true
+    Default: not-set
+  LambdaFunctionName:
+    Type: String
+    Description: Name of the lambda function
+    Default: budgies-budgets-backend
+  DynamoTableName:
+    Type: String
+    Description: Name of the dynamodb table
+    Default: budgies-budgets-data
+  S3ImageBucketName:
+    Type: String
+    Description: Name of the s3 bucket for memo images to go to
+    Default: budgies-budgets-images-YourAccountNumberHere
+  PublicRoute53Zone:
+    Type: String
+    Description: Zone to add a public record to
+    Default: not-set
+  PublicDomain:
+    Type: String
+    Description: Domain used for piecing the record together
+    Default: not-set
+  ACMCertificateArn:
+    Type: String
+    Description: ACM ARN to use for SSL on API Gateway
+    Default: not-set
+Resources:
+  # IAM Roles / permissions
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Description: "Role for lambda to use to interface with s3, dynamo, param store"
+      RoleName: BudgiesBudgets_Lambda_Role
+      Policies: 
+        - PolicyName: Lambda_Execution
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - "logs:CreateLogGroup"
+                Resource: "*"
+              - Effect: Allow
+                Action: 
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${LambdaFunctionName}:*"
+        # - PolicyName: S3_Access
+        #   PolicyDocument:
+        #     Version: "2012-10-17"
+        #     Statement:
+        #       - Effect: Allow
+        #         Action: "Lambda:*"
+        #         Resource: "*"
+        # - PolicyName: Dynamo_Access
+        #   PolicyDocument:
+        #     Version: "2012-10-17"
+        #     Statement:
+        #       - Effect: Allow
+        #         Action: "Lambda:*"
+        #         Resource: "*"      
+        # - PolicyName: SSM_Access
+        #   PolicyDocument:
+        #     Version: "2012-10-17"
+        #     Statement:
+        #       - Effect: Allow
+        #         Action: "Lambda:*"
+        #         Resource: "*"
+  # Parameter
+  APIKeyParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: API Key for API Gateway access
+      Name: budgies-budgets-api-key
+      Type: String
+      Value: !Ref APIKey
+  # Route53 record
+  Record:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneId: !Ref PublicRoute53Zone
+      RecordSets:
+        - Name: !Sub bbb.${PublicDomain}
+          Type: A
+          AliasTarget:
+            DNSName: !GetAtt CustomAPIDomain.RegionalDomainName
+            EvaluateTargetHealth: false
+            HostedZoneId: !GetAtt CustomAPIDomain.RegionalHostedZoneId
+  # API Gateway to take in requests to a customized endpoint
+  CustomAPIDomain:
+    Type: AWS::ApiGatewayV2::DomainName
+    Properties:
+      DomainName: !Sub bbb.${PublicDomain}
+      DomainNameConfigurations:
+        - SecurityPolicy: TLS_1_2
+          EndpointType: Regional
+          CertificateArn: !Ref ACMCertificateArn
+  APIGateway:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: budgies-budgets-api
+      ProtocolType: HTTP
+      Target: !GetAtt LambdaFunction.Arn
+      DisableExecuteApiEndpoint: true
+  APIMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Properties:
+      ApiId: !Ref APIGateway
+      DomainName: !Sub bbb.${PublicDomain}
+      Stage: $default
+  # Lambda to handle request data
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties: 
+      Description: Lambda to handle app requests
+      FunctionName: !Ref LambdaFunctionName
+      Handler: index.lambda_handler
+      MemorySize: 128
+      Runtime: python3.9
+      Timeout: 60
+      Code: 
+        ZipFile: | 
+          import boto3
+          import json
+          def lambda_handler(event, context):
+            return {
+                    'statusCode': 200,
+                    'body': json.dumps('Hello World!')
+                   }
+      Role: !GetAtt LambdaRole.Arn
+  LambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt LambdaFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${APIGateway}/*
+  # S3 Bucket for images (ensure ownership control, encryption, transfer acceleration, and no public access)
+  ImageBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccelerateConfiguration:
+        AccelerationStatus: Enabled
+      AccessControl: Private
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - BucketKeyEnabled: true
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+      BucketName: !Ref S3ImageBucketName
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+  # Dynamo table for data

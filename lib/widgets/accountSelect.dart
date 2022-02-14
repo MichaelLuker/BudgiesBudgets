@@ -118,7 +118,8 @@ class _AccountSelect extends State<AccountSelect> {
                                             MainAxisAlignment.center,
                                         children: [
                                           const Flexible(
-                                              flex: 0, child: Text("Name:   ")),
+                                              flex: 0,
+                                              child: Text("Name:      ")),
                                           Expanded(
                                               flex: 3,
                                               child: TextField(
@@ -158,7 +159,7 @@ class _AccountSelect extends State<AccountSelect> {
                                         children: [
                                           const Flexible(
                                               flex: 0,
-                                              child: Text("Giftcard:   ")),
+                                              child: Text("Giftcard:  ")),
                                           Expanded(
                                               flex: 3,
                                               child: Checkbox(
