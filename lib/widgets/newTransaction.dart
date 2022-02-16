@@ -76,7 +76,6 @@ class _newTransactionState extends State<newTransaction> {
                         log(t.toString());
                         data.allTransactions.add(t);
                       }
-                      log(data.allTransactions.toString());
                       updateList();
                     });
                     Navigator.of(context).pop();
@@ -196,15 +195,7 @@ class _newTransactionState extends State<newTransaction> {
                       flex: 3,
                       child: DropdownButton<String>(
                           isExpanded: true,
-                          items: data.accounts.map((e) {
-                            return DropdownMenuItem<String>(
-                                value: e.name,
-                                child: Text(
-                                  e.name,
-                                  style: const TextStyle(
-                                      color: Colors.lightBlueAccent),
-                                ));
-                          }).toList(),
+                          items: data.getUserAccounts(all: false),
                           value: newTransaction.account,
                           onChanged: (value) {
                             setState(() {

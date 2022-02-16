@@ -17,18 +17,33 @@ class AccountSelect extends StatefulWidget {
 
   @override
   State<AccountSelect> createState() =>
-      _AccountSelect(data: data, recalculate: recalculate);
+      AccountSelectState(data: data, recalculate: recalculate);
 }
 
-class _AccountSelect extends State<AccountSelect> {
+class AccountSelectState extends State<AccountSelect> {
   final FinancialData data;
   final Function recalculate;
-  _AccountSelect({required this.data, required this.recalculate});
+  AccountSelectState({required this.data, required this.recalculate});
 
   TextEditingController nameController = TextEditingController();
   TextEditingController balanceController = TextEditingController();
+  String selectedAccount = "All";
+  List<DropdownMenuItem<String>> accounts = [];
   bool isGiftcard = false;
   bool confirmDelete = false;
+
+  void updateAccountDropdown() {
+    setState(() {
+      selectedAccount = data.currentAccount;
+      accounts = data.getUserAccounts();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    updateAccountDropdown();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,29 +66,13 @@ class _AccountSelect extends State<AccountSelect> {
                     flex: 3,
                     child: DropdownButton<String>(
                         isExpanded: true,
-                        items: <DropdownMenuItem<String>>[
-                              DropdownMenuItem<String>(
-                                  value: "All",
-                                  child: Text(
-                                    "All",
-                                    style: const TextStyle(
-                                        color: Colors.lightBlueAccent),
-                                  ))
-                            ] +
-                            data.accounts.map((e) {
-                              return DropdownMenuItem<String>(
-                                  value: e.name,
-                                  child: Text(
-                                    e.name,
-                                    style: const TextStyle(
-                                        color: Colors.lightBlueAccent),
-                                  ));
-                            }).toList(),
-                        value: data.currentAccount,
+                        items: accounts,
+                        value: selectedAccount,
                         onChanged: (value) {
                           setState(() {
                             if (value != null) {
                               data.currentAccount = value;
+                              selectedAccount = value;
                               recalculate(regenerateRows: true);
                             }
                           });
@@ -177,6 +176,7 @@ class _AccountSelect extends State<AccountSelect> {
                           }).then((e) {
                         setState(() {
                           data.accounts.add(Account.withValues(
+                              user: data.currentUser,
                               name: nameController.text,
                               balance: 0,
                               isGiftcard: isGiftcard));

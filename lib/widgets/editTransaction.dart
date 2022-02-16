@@ -269,15 +269,7 @@ class _editTransactionState extends State<editTransaction> {
                     flex: 3,
                     child: DropdownButton<String>(
                         isExpanded: true,
-                        items: data.accounts.map((e) {
-                          return DropdownMenuItem<String>(
-                              value: e.name,
-                              child: Text(
-                                e.name,
-                                style: const TextStyle(
-                                    color: Colors.lightBlueAccent),
-                              ));
-                        }).toList(),
+                        items: data.getUserAccounts(all: false),
                         value: transaction.account,
                         onChanged: (value) {
                           setState(() {

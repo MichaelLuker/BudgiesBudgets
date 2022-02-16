@@ -61,7 +61,11 @@ class _UserSelect extends State<UserSelect> {
                           setState(() {
                             if (value != null) {
                               data.currentUser = value;
-                              recalculate(regenerateRows: true);
+                              data.currentAccount = "All";
+                              data.categoryFilter = "Transactions";
+                              recalculate(
+                                  regenerateRows: true,
+                                  updateAccountDropdowns: true);
                             }
                           });
                         })),

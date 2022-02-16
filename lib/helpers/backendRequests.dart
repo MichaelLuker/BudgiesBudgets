@@ -1,6 +1,10 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:archive/archive.dart';
+import 'package:budgies_budgets/helpers/backgroundData.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
 // Takes a json object and converts it to a string, base64 encodes it, then gzip it
 String compressData(Map<String, dynamic> jsonObject) {
@@ -31,13 +35,41 @@ Map<String, dynamic> decompressData(String data) {
 }
 
 // Function to wrap a request with the required authentication and compression
-Future<Map<String, dynamic>> generateRequestComponents(String path) async {
+Future<Map<String, dynamic>> generateRequestComponents(
+    String path, Map<String, dynamic>? params) async {
   // Read the authority and apiKey from the secret file
   String fileContent = await rootBundle.loadString('assets/secret.json');
   Map<String, dynamic> secrets = await json.decode(fileContent);
+  log(secrets.toString());
   String authority = secrets["backendLocation"];
   String apiKey = secrets["apiKey"];
-  Uri uri = Uri.https(authority, path);
+  Uri uri = Uri.https(authority, path, params);
   Map<String, String> headers = {"apiKey": apiKey};
   return {"uri": uri, "headers": headers};
+}
+
+// Request the transactions in a range
+Future<FinancialData> getTransactions(DateTimeRange range) async {
+  // Generate request components
+  var requestComponents = await generateRequestComponents(
+      "/getTransactions", {"startDate": range.start, "endDate": range.end});
+  log(requestComponents.toString());
+  // Make the request
+  http.Response response = await http.get(requestComponents["uri"],
+      headers: requestComponents["headers"]);
+  // Decompress the response
+  log(response.body);
+  var temp = decompressData(response.body);
+  FinancialData d = FinancialData();
+  // Put all the accounts, transactions, and users into the data object for return
+  for (Map<String, dynamic> acct in temp['accounts']) {
+    d.accounts.add(Account.fromJson(acct));
+  }
+  for (Map<String, dynamic> tr in temp['transactions']) {
+    d.allTransactions.add(Transaction.fromJson(tr));
+  }
+  for (String u in temp['users']) {
+    d.users.add(u);
+  }
+  return d;
 }

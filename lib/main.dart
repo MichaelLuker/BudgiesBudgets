@@ -54,10 +54,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // Wait for data to be loaded before displaying widgets
   bool initialized = false;
+  bool calledOnce = false;
   late FinancialData data;
   GlobalKey<TransactionListState> transactionListKey = GlobalKey();
+  GlobalKey<AccountSelectState> accountSelectKey = GlobalKey();
   late UserSelect userSelect;
   late AccountSelect accountSelect;
   late MonthSelect monthSelect;
@@ -65,18 +66,29 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Function to call all the other pieces to recalculate graphs / budgets when
   //   transactions are created, deleted, or modified
-  void recalculate({bool regenerateRows = false}) {
+  void recalculate(
+      {bool regenerateRows = false, bool updateAccountDropdowns = false}) {
+    log("Reticulating Splines...");
     if (regenerateRows) {
-      transactionListKey.currentState!.generateRows();
+      transactionListKey.currentState?.generateRows();
     }
-    log("Reticulating Splines... Done!");
+    if (updateAccountDropdowns) {
+      accountSelectKey.currentState?.updateAccountDropdown();
+    }
+    log("Done!");
   }
 
-  void loadTransactions() async {
-    // Load my current transaction list
+  Future<FinancialData> loadInitialTransactions() async {
+    // Reading in some test data from a csv file
+    // Windows path
+    // String filePath =
+    //     "C:\\Users\\Zhyne\\Documents\\Projects\\BudgiesBudgets\\TestData.csv";
+    // Android path
     String filePath =
-        "C:\\Users\\Zhyne\\Documents\\Projects\\BudgiesBudgets\\TestData.csv";
+        "/data/user/0/com.example.budgies_budgets/cache/file_picker/TestDataSmall.csv";
     final csv = await readCsv(filePath);
+    FinancialData fd = FinancialData();
+    // Add all the transactions, from the transactions also add in the users and empty basic accounts
     setState(() {
       for (List<String> row in csv) {
         Transaction t = Transaction.withValues(
@@ -87,62 +99,57 @@ class _MyHomePageState extends State<MyHomePage> {
             amount: double.parse(row[4]),
             memo: row[5]);
         t.guid = generateGUID(t);
-        data.allTransactions.add(t);
+        fd.allTransactions.add(t);
+        if (!fd.users.contains(row[0])) {
+          fd.users.add(row[0]);
+        }
       }
     });
-    // Testing encode / decode
-    // Create the object to be used
-    Map<String, dynamic> jsonObj = {
-      "accounts": data.accounts,
-      "transactions": data.allTransactions,
-      "users": data.users
-    };
-    // Compress it
-    String testCompress = compressData(jsonObj);
-    // Decompress it
-    Map<String, dynamic> testDecompress = decompressData(testCompress);
-    // Make sure the previously loaded data is cleared out
-    data.accounts = [];
-    data.allTransactions = [];
-    data.users = [];
-    data.filteredTransactions = [];
-    // Add back all the accounts, transactions, and users
-    for (Map<String, dynamic> acct in testDecompress['accounts']) {
-      data.accounts.add(Account.fromJson(acct));
+    for (String user in fd.users) {
+      fd.accounts.add(Account.withValues(
+          user: user, name: "Savings", balance: 0.0, isGiftcard: false));
+      fd.accounts.add(Account.withValues(
+          user: user, name: "Checking", balance: 0.0, isGiftcard: false));
+      fd.accounts.add(Account.withValues(
+          user: user, name: "Visa", balance: 0.0, isGiftcard: false));
     }
-    for (Map<String, dynamic> tr in testDecompress['transactions']) {
-      data.allTransactions.add(Transaction.fromJson(tr));
-    }
-    for (String u in testDecompress['users']) {
-      data.users.add(u);
-    }
-    recalculate(regenerateRows: true);
+    fd.currentUser = fd.users[0];
+    fd.startDate = DateTime.parse("2022-01-01");
+    fd.endDate = DateTime.now();
+    fd.sortAccounts();
+    fd.sortTransactions();
+    return fd;
+    // Taking a test blob from python output to see if compression / decompressiong works
+    // data.startDate = DateTime.now().subtract(const Duration(days: 30));
+    // data.startDate = DateTime.parse("2022-01-01");
+    // data.endDate = DateTime.now();
+    // String compressedTestTransactions = "'H4sIAAUlDWIC/8VdXXebSLb9S4Dg3puH+yAbiUbLVSxkJFL1FktzBQVksqbtAPXr796ldE+mxzCRnW7WLK/0JP6Qjs85e...TxFqFkn4OzU/VcbeDyU/Z8oG+Hv2JO6uNH73//HwunPqI0fgAA'";
+    // return FinancialData.fromJson(
+    //     decompressData(compressedTestTransactions),
+    //     DateTimeRange(
+    //         start: DateTime.parse("2022-01-01"), end: DateTime.now()));
+  }
+
+  void loadDataThenWidgets() async {
+    data = await loadInitialTransactions();
+    setState(() {
+      userSelect = UserSelect(data: data, recalculate: recalculate);
+      accountSelect = AccountSelect(
+          key: accountSelectKey, data: data, recalculate: recalculate);
+      monthSelect = MonthSelect(
+        data: data,
+        recalculate: recalculate,
+      );
+      transactionList = TransactionList(
+          key: transactionListKey, data: data, recalculate: recalculate);
+      initialized = true;
+    });
   }
 
   @override
   void initState() {
     super.initState();
-    // Set the initial start and end dates for a range to analyze
-    data = FinancialData();
-    //data.startDate = DateTime.now().subtract(const Duration(days: 30));
-    data.startDate = DateTime.parse("2022-01-01");
-    data.endDate = DateTime.now();
-    data.users.add("Mike");
-    data.currentUser = "Mike";
-    //loadTransactions();
-
-    // Instantiate the different window widgets
-    userSelect = UserSelect(data: data, recalculate: recalculate);
-    accountSelect = AccountSelect(data: data, recalculate: recalculate);
-    monthSelect = MonthSelect(
-      data: data,
-      recalculate: recalculate,
-    );
-    transactionList = TransactionList(
-        key: transactionListKey, data: data, recalculate: recalculate);
-    setState(() {
-      initialized = true;
-    });
+    loadDataThenWidgets();
   }
 
   @override

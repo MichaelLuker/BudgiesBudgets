@@ -8,22 +8,23 @@ import 'package:svg_icon/svg_icon.dart';
 
 // Different categories that a transaction can be
 enum Category {
-  Housing, // Icons.home
-  Transportation, // Icons.commute
-  Food, // Icons.store or Icons.shopping_bag or Icons.shopping_basket
-  Utilities, // Icons.outlet
-  Insurance, // Icons.assignment
-  Medical, // Icons.favorite
-  Savings, // Icons.savings
-  Personal, // Icons.face or
-  Entertainment, // Icons.extension or icons.rocket_launch or icons.rowing
-  Miscellaneous, // Icons.book
-  Income, // Icons.paid or Icons.work
-  Transfer, // Icons.sync_alt
-  Giftcard, // Icons.card_giftcard
-  Fee, // Icons.paid
-  Subscription, // Icons.autorenew
-  Pet, // Icons.pets
+  Housing,
+  Transportation,
+  Groceries,
+  Food,
+  Utilities,
+  Insurance,
+  Medical,
+  Savings,
+  Personal,
+  Entertainment,
+  Miscellaneous,
+  Income,
+  Transfer,
+  Giftcard,
+  Fee,
+  Subscription,
+  Pet,
 }
 
 // Returns an icon depending on what category / size were given
@@ -32,9 +33,11 @@ Widget categoryToIcon(Category c, double size) {
     case Category.Housing:
       return Icon(Icons.home, size: size);
     case Category.Transportation:
-      return Icon(Icons.commute);
-    case Category.Food:
+      return Icon(Icons.commute, size: size);
+    case Category.Groceries:
       return Icon(Icons.shopping_cart, size: size);
+    case Category.Food:
+      return Icon(Icons.local_pizza, size: size);
     case Category.Utilities:
       return Icon(Icons.outlet, size: size);
     case Category.Insurance:
@@ -46,7 +49,11 @@ Widget categoryToIcon(Category c, double size) {
     case Category.Personal:
       return Icon(Icons.face, size: size);
     case Category.Entertainment:
-      return SvgIcon("icons/rocket_launch_white_24dp.svg");
+      return SvgIcon(
+        "icons/rocket_launch_white_24dp.svg",
+        width: size,
+        height: size,
+      );
     case Category.Miscellaneous:
       return Icon(Icons.book, size: size);
     case Category.Income:
@@ -60,7 +67,7 @@ Widget categoryToIcon(Category c, double size) {
     case Category.Subscription:
       return Icon(Icons.autorenew, size: size);
     case Category.Pet:
-      return Icon(Icons.pets);
+      return Icon(Icons.pets, size: size);
     default:
       return Icon(Icons.home, size: size);
   }
@@ -114,6 +121,7 @@ class Account {
   bool isGiftcard = false;
   Account();
   Account.withValues({
+    required this.user,
     required this.name,
     required this.balance,
     required this.isGiftcard,
@@ -177,7 +185,7 @@ class Transaction {
       "amount": amount,
       "memo": memo,
       "user": user,
-      (memoImage != null) ? "memoImageKey" : guid: ""
+      "memoImageKey": (memoImage != null) ? memoImageKey : "none"
     };
   }
 
@@ -188,14 +196,14 @@ class Transaction {
 
   @override
   String toString() {
-    return "User: $user | Date: ${formatDate(date)} | Category: ${category.toString().split(".")[1]} | Account: $account | Amount: ${strAmount()} | Memo: $memo\n";
+    return "GUID: $guid | User: $user | Date: ${formatDate(date)} | Category: ${category.toString().split(".")[1]} | Account: $account | Amount: ${strAmount()} | Memo: $memo\n";
   }
 }
 
 // Generates a GUID for the given transaction
 String generateGUID(Transaction t) {
   String content =
-      "${t.user}${t.date.toString()}${t.category.toString()}${t.account}${t.amount}${t.memo}";
+      "${t.user}${t.date.year}${t.date.month}${t.date.day}${t.category.toString()}${t.account}${t.amount}${t.memo}";
   return sha256.convert(utf8.encode(content)).toString();
 }
 
@@ -239,17 +247,13 @@ String formatDate(DateTime d) {
 // Custom object to hold all the financial data (transactions and accounts) that gets used for
 //   filtering and analysis
 class FinancialData {
-  late DateTime startDate;
-  late DateTime endDate;
-  List<Account> accounts = [
-    Account.withValues(name: "Checking", balance: 0.00, isGiftcard: false),
-    Account.withValues(name: "Savings", balance: 0.00, isGiftcard: false),
-    Account.withValues(name: "Visa", balance: 0.00, isGiftcard: false),
-  ];
+  DateTime startDate = DateTime.now();
+  DateTime endDate = DateTime.now();
+  List<Account> accounts = [];
   List<Transaction> allTransactions = [];
   List<Transaction> filteredTransactions = [];
   List<String> users = [];
-  String currentUser = "";
+  String currentUser = "None";
   String currentAccount = "All";
   String categoryFilter = "Transactions";
 
@@ -303,6 +307,57 @@ class FinancialData {
     for (int i = 0; i < filteredTransactions.length; i++) {
       filteredTransactions[i].id = i;
     }
+  }
+
+  // Returns a list of dropdown items for the current user accounts
+  List<DropdownMenuItem<String>> getUserAccounts({bool all = true}) {
+    List<DropdownMenuItem<String>> r = [];
+    // Add the all option
+    if (all) {
+      r.add(DropdownMenuItem<String>(
+          value: "All",
+          child: Text(
+            "All",
+            style: const TextStyle(color: Colors.lightBlueAccent),
+          )));
+    }
+    for (Account a in accounts) {
+      if (a.user == currentUser) {
+        r.add(DropdownMenuItem<String>(
+            value: a.name,
+            child: Text(
+              a.name,
+              style: const TextStyle(color: Colors.lightBlueAccent),
+            )));
+      }
+    }
+    return r;
+  }
+
+  FinancialData();
+
+  FinancialData.fromJson(Map<String, dynamic> json, DateTimeRange dtr) {
+    startDate = dtr.start;
+    endDate = dtr.end;
+    for (Map<String, dynamic> a in json['accounts']) {
+      accounts.add(Account.fromJson(a));
+      if (!users.contains(a['user'])) {
+        users.add(a['user']);
+      }
+    }
+    for (Map<String, dynamic> t in json['transactions']) {
+      allTransactions.add(Transaction.fromJson(t));
+    }
+    currentUser = users[0];
+    sortAccounts();
+    sortTransactions();
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "accounts": accounts.map((e) => e.toJson()).toList(),
+      "transactions": allTransactions.map((e) => e.toJson()).toList()
+    };
   }
 
   @override

@@ -10,10 +10,6 @@ Parameters:
     Type: String
     Description: Name of the lambda function
     Default: budgies-budgets-backend
-  DynamoTableName:
-    Type: String
-    Description: Name of the dynamodb table
-    Default: budgies-budgets-data
   S3ImageBucketName:
     Type: String
     Description: Name of the s3 bucket for memo images to go to
@@ -193,19 +189,44 @@ Resources:
         BlockPublicPolicy: true
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
-  # Encrypted Dynamo table for data
-  DataTable:
+  # Encrypted Dynamo tables for data
+  # Transactions are keyed on a guid, sorted by user
+  TransactionTable:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
-        - AttributeName: TransactionGUID
+        - AttributeName: guid
+          AttributeType: S
+        - AttributeName: user
           AttributeType: S
       BillingMode: PAY_PER_REQUEST
       KeySchema: 
-        - AttributeName: TransactionGUID
+        - AttributeName: guid
           KeyType: HASH
+        - AttributeName: user
+          KeyType: RANGE
       SSESpecification:
         SSEEnabled: true
         SSEType: KMS
       TableClass: STANDARD_INFREQUENT_ACCESS
-      TableName: !Ref DynamoTableName
+      TableName: budgies-budgets-transactions
+  # Accounts are keyed on the user and sorted on the account name
+  AccountTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: user
+          AttributeType: S
+        - AttributeName: name
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema: 
+        - AttributeName: user
+          KeyType: HASH
+        - AttributeName: name
+          KeyType: RANGE
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD_INFREQUENT_ACCESS
+      TableName: budgies-budgets-transactions
