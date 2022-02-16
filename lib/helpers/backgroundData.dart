@@ -145,7 +145,6 @@ class Account {
 // Custom Transaction object
 class Transaction {
   String guid = "";
-  int id = -1;
   DateTime date = DateTime.now();
   Category category = Category.Personal;
   String account = "Visa";
@@ -302,11 +301,6 @@ class FinancialData {
     // Once all the transactions have been filtered to the date range, sort by the date
     filteredTransactions
         .sort((Transaction a, Transaction b) => b.date.compareTo(a.date));
-
-    // Finally go through and set the ID on each transaction
-    for (int i = 0; i < filteredTransactions.length; i++) {
-      filteredTransactions[i].id = i;
-    }
   }
 
   // Returns a list of dropdown items for the current user accounts

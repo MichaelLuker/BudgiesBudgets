@@ -81,11 +81,11 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<FinancialData> loadInitialTransactions() async {
     // Reading in some test data from a csv file
     // Windows path
-    // String filePath =
-    //     "C:\\Users\\Zhyne\\Documents\\Projects\\BudgiesBudgets\\TestData.csv";
-    // Android path
     String filePath =
-        "/data/user/0/com.example.budgies_budgets/cache/file_picker/TestDataSmall.csv";
+        "C:\\Users\\Zhyne\\Documents\\Projects\\BudgiesBudgets\\InitialTransactions.csv";
+    // Android path
+    // String filePath =
+    //     "/data/user/0/com.example.budgies_budgets/cache/file_picker/InitialTransactions.csv";
     final csv = await readCsv(filePath);
     FinancialData fd = FinancialData();
     // Add all the transactions, from the transactions also add in the users and empty basic accounts

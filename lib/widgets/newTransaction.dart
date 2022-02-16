@@ -101,7 +101,6 @@ class _newTransactionState extends State<newTransaction> {
                     newTransaction.amount = 0.0;
                   }
                   newTransaction.memo = memoController.text;
-                  newTransaction.id = data.allTransactions.length;
                   newTransaction.user = data.currentUser;
                   if (transactionImage != null) {
                     newTransaction.memoImage = transactionImage;

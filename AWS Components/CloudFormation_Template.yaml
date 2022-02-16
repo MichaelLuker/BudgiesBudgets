@@ -88,7 +88,7 @@ Resources:
                   - "dynamodb:Scan"
                   - "dynamodb:UpdateItem"
                   - "dynamodb:UpdateTimeToLive"
-                Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${DynamoTableName}"
+                Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/budgies-budgets-*"
         - PolicyName: SSM_Access
           PolicyDocument:
             Version: "2012-10-17"
@@ -229,4 +229,4 @@ Resources:
         SSEEnabled: true
         SSEType: KMS
       TableClass: STANDARD_INFREQUENT_ACCESS
-      TableName: budgies-budgets-transactions
+      TableName: budgies-budgets-accounts
