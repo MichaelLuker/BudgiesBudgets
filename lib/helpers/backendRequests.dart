@@ -44,15 +44,20 @@ Future<Map<String, dynamic>> generateRequestComponents(
   String authority = secrets["backendLocation"];
   String apiKey = secrets["apiKey"];
   Uri uri = Uri.https(authority, path, params);
-  Map<String, String> headers = {"apiKey": apiKey};
+  Map<String, String> headers = {"apikey": apiKey};
   return {"uri": uri, "headers": headers};
 }
 
 // Request the transactions in a range
-Future<FinancialData> getTransactions(DateTimeRange range) async {
+Future<FinancialData> getAllFinancialData(DateTimeRange range) async {
   // Generate request components
-  var requestComponents = await generateRequestComponents(
-      "/getTransactions", {"startDate": range.start, "endDate": range.end});
+  var requestComponents =
+      await generateRequestComponents("/getAllFinancialData", {
+    "startDate":
+        "${range.start.year}-${range.start.month.toString().padLeft(2, "0")}-${range.start.day.toString().padLeft(2, "0")}",
+    "endDate":
+        "${range.end.year}-${range.end.month.toString().padLeft(2, "0")}-${range.end.day.toString().padLeft(2, "0")}"
+  });
   log(requestComponents.toString());
   // Make the request
   http.Response response = await http.get(requestComponents["uri"],
@@ -60,16 +65,7 @@ Future<FinancialData> getTransactions(DateTimeRange range) async {
   // Decompress the response
   log(response.body);
   var temp = decompressData(response.body);
-  FinancialData d = FinancialData();
-  // Put all the accounts, transactions, and users into the data object for return
-  for (Map<String, dynamic> acct in temp['accounts']) {
-    d.accounts.add(Account.fromJson(acct));
-  }
-  for (Map<String, dynamic> tr in temp['transactions']) {
-    d.allTransactions.add(Transaction.fromJson(tr));
-  }
-  for (String u in temp['users']) {
-    d.users.add(u);
-  }
+  // Create the object and return it
+  FinancialData d = FinancialData.fromJson(temp, range);
   return d;
 }

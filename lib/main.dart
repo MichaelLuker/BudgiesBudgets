@@ -13,6 +13,7 @@ import 'package:svg_icon/svg_icon.dart';
 import 'package:budgies_budgets/helpers/backgroundData.dart';
 import 'package:budgies_budgets/widgets/monthSelect.dart';
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 
 void main() {
   runApp(const MyApp());
@@ -53,7 +54,7 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   bool initialized = false;
   bool calledOnce = false;
   late FinancialData data;
@@ -63,6 +64,8 @@ class _MyHomePageState extends State<MyHomePage> {
   late AccountSelect accountSelect;
   late MonthSelect monthSelect;
   late TransactionList transactionList;
+  late AnimationController syncAnimationController;
+  bool syncing = false;
 
   // Function to call all the other pieces to recalculate graphs / budgets when
   //   transactions are created, deleted, or modified
@@ -78,14 +81,36 @@ class _MyHomePageState extends State<MyHomePage> {
     log("Done!");
   }
 
+  // Pull down data from the backend, compare to see what needs to be added
+  Future<void> syncData() async {
+    // First get the data from the backend
+    FinancialData temp = await getAllFinancialData(
+        DateTimeRange(start: data.startDate, end: data.endDate));
+    // Set all the accounts to what was retrieved
+    // Look at the transactions, if there are any guids that match but have different values
+    //   use the downloaded data to refresh the transaction data
+    // If there are any guids that have a status of deleted remove them from the local copy
+    // If there are any guids we have locally that aren't in the backend upload them
+    // When we're done update the syncing status to be finished
+    setState(() {
+      data.accounts = temp.accounts;
+      data.allTransactions = temp.allTransactions;
+      data.startDate = temp.startDate;
+      data.endDate = temp.endDate;
+      syncing = false;
+      syncAnimationController.stop();
+      syncAnimationController.reset();
+    });
+  }
+
   Future<FinancialData> loadInitialTransactions() async {
     // Reading in some test data from a csv file
     // Windows path
-    String filePath =
-        "C:\\Users\\Zhyne\\Documents\\Projects\\BudgiesBudgets\\InitialTransactions.csv";
-    // Android path
     // String filePath =
-    //     "/data/user/0/com.example.budgies_budgets/cache/file_picker/InitialTransactions.csv";
+    //     "C:\\Users\\Zhyne\\Documents\\Projects\\BudgiesBudgets\\InitialTransactions.csv";
+    // Android path
+    String filePath =
+        "/data/user/0/com.example.budgies_budgets/cache/file_picker/InitialTransactions.csv";
     final csv = await readCsv(filePath);
     FinancialData fd = FinancialData();
     // Add all the transactions, from the transactions also add in the users and empty basic accounts
@@ -131,7 +156,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void loadDataThenWidgets() async {
-    data = await loadInitialTransactions();
+    //data = await loadInitialTransactions();
+    data = await getAllFinancialData(DateTimeRange(
+        start: DateTime.parse("2022-01-01"), end: DateTime.now()));
     setState(() {
       userSelect = UserSelect(data: data, recalculate: recalculate);
       accountSelect = AccountSelect(
@@ -149,6 +176,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    syncAnimationController =
+        AnimationController(vsync: this, duration: Duration(seconds: 1));
     loadDataThenWidgets();
   }
 
@@ -170,28 +199,59 @@ class _MyHomePageState extends State<MyHomePage> {
                     });
               },
             ),
-            body: SafeArea(
-              child: Column(
-                children: [
-                  // Header elements that should always stay visible
-                  userSelect,
-                  accountSelect,
-                  monthSelect,
-                  // Scrolling on the panels
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 86),
-                      child: SingleChildScrollView(
-                          child: ListBody(
-                        children: [
-                          transactionList,
-                          const Spacer(),
-                        ],
-                      )),
-                    ),
-                  )
-                ],
-              ),
+            body: Stack(
+              children: [
+                Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 0, 16),
+                    child: FloatingActionButton(
+                        onPressed: () async {
+                          if (!syncing) {
+                            setState(() {
+                              syncing = true;
+                              syncAnimationController.repeat();
+                            });
+                            await syncData();
+                            recalculate(
+                                regenerateRows: true,
+                                updateAccountDropdowns: true);
+                          }
+                        },
+                        child: RotationTransition(
+                          turns: Tween(begin: 0.0, end: 1.0)
+                              .animate(syncAnimationController),
+                          child: Transform(
+                              alignment: Alignment.center,
+                              transform: Matrix4.rotationY(math.pi),
+                              child: Icon(Icons.sync)),
+                        )),
+                  ),
+                ),
+                SafeArea(
+                  child: Column(
+                    children: [
+                      // Header elements that should always stay visible
+                      userSelect,
+                      accountSelect,
+                      monthSelect,
+                      // Scrolling on the panels
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 86),
+                          child: SingleChildScrollView(
+                              child: ListBody(
+                            children: [
+                              transactionList,
+                              const Spacer(),
+                            ],
+                          )),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ],
             ),
           )
         : const Center(child: CircularProgressIndicator());
