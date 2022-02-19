@@ -1,6 +1,7 @@
 // All the parts for filling out details for a new transaction
 import 'dart:developer';
 
+import 'package:budgies_budgets/helpers/backendRequests.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:budgies_budgets/helpers/backgroundData.dart';
@@ -30,6 +31,7 @@ class _newTransactionState extends State<newTransaction> {
   bool bulkImport = false;
   bool dragging = false;
   Image? transactionImage;
+  String? imagePath;
 
   @override
   void initState() {
@@ -61,7 +63,6 @@ class _newTransactionState extends State<newTransaction> {
                       await FilePicker.platform.pickFiles();
                   if (file != null) {
                     String filePath = file.files[0].path.toString();
-                    log(filePath);
                     final csv = await readCsv(filePath);
                     setState(() {
                       for (List<String> row in csv) {
@@ -73,7 +74,6 @@ class _newTransactionState extends State<newTransaction> {
                             amount: double.parse(row[4]),
                             memo: row[5]);
                         t.guid = generateGUID(t);
-                        log(t.toString());
                         data.allTransactions.add(t);
                       }
                       updateList();
@@ -103,13 +103,19 @@ class _newTransactionState extends State<newTransaction> {
                   newTransaction.memo = memoController.text;
                   newTransaction.user = data.currentUser;
                   if (transactionImage != null) {
-                    newTransaction.memoImage = transactionImage;
+                    newTransaction.hasMemoImage = true;
+                    newTransaction.memoImagePath = imagePath;
+                    newTransaction.memoImageWidget =
+                        InteractiveViewer(child: transactionImage!);
                     setState(() {
                       transactionImage = null;
                     });
                   }
                   newTransaction.guid = generateGUID(newTransaction);
+                  // Adding the transaction locally
                   data.allTransactions.add(newTransaction);
+                  // Write the new transaction to the backend
+                  writeNewTransaction(newTransaction);
                   updateList();
                   Navigator.of(context).pop();
                 },
@@ -265,9 +271,11 @@ class _newTransactionState extends State<newTransaction> {
                                         ImagePicker imagePicker = ImagePicker();
                                         XFile? image =
                                             await imagePicker.pickImage(
-                                                source: ImageSource.camera);
+                                                source: ImageSource.camera,
+                                                imageQuality: 75);
                                         if (image != null) {
                                           setState(() {
+                                            imagePath = image.path;
                                             transactionImage =
                                                 Image.file(File(image.path));
                                           });

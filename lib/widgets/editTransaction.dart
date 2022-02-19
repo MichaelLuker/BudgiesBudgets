@@ -180,7 +180,9 @@ class _editTransactionState extends State<editTransaction> {
                 }
                 transaction.memo = memoController.text;
                 if (transactionImage != null) {
-                  transaction.memoImage = transactionImage;
+                  transaction.hasMemoImage = true;
+                  transaction.memoImageWidget =
+                      InteractiveViewer(child: transactionImage!);
                   setState(() {
                     transactionImage = null;
                   });
@@ -317,14 +319,13 @@ class _editTransactionState extends State<editTransaction> {
                     flex: 3,
                     child: Row(
                       children: [
-                        (transaction.memoImage != null ||
-                                transactionImage != null)
+                        (transaction.hasMemoImage || transactionImage != null)
                             ? Expanded(
                                 child: IconButton(
                                     onPressed: () {
                                       setState(() {
                                         transactionImage = null;
-                                        transaction.memoImage = null;
+                                        transaction.hasMemoImage = false;
                                       });
                                     },
                                     icon: Icon(Icons.delete)),

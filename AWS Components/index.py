@@ -3,6 +3,10 @@ import base64
 import gzip
 import json
 
+accountTable='budgies-budgets-accounts'
+transactionTable='budgies-budgets-transactions'
+imageBucket='budgies-budgets-images-something blah blah blah'
+
 # Save the API key out here for quick reuse
 ssm = boto3.client('ssm')
 apiKey = ssm.get_parameter(Name='budgies-budgets-api-key')['Parameter']['Value']
@@ -21,7 +25,7 @@ def compressString(res):
 def getAllFinancialData(start, end):
   # Get the account data first 
   returnData = {'accounts': [], 'transactions':[]}
-  accountResults = dynamo.scan(TableName='budgies-budgets-accounts')['Items']
+  accountResults = dynamo.scan(TableName=accountTable)['Items']
   for item in accountResults:
     returnData['accounts'].append({
       'user': item['user']['S'],
@@ -29,8 +33,8 @@ def getAllFinancialData(start, end):
       'balance': float(item['balance']['N']),
       'isGiftcard': item['isGiftcard']['BOOL']
     })
-  # Then the transactions
-  transactionResults = dynamo.scan(TableName='budgies-budgets-transactions', 
+  # Then the transactions in the date range
+  transactionResults = dynamo.scan(TableName=transactionTable, 
                                    FilterExpression="#d BETWEEN :start AND :end",
                                    ExpressionAttributeNames={"#d": "date"},
                                    ExpressionAttributeValues={":start":{"S": start}, ":end":{"S": end}},
@@ -48,6 +52,19 @@ def getAllFinancialData(start, end):
     })
   # Return the compressed string
   return compressString(json.dumps(returnData))
+
+def writeNewTransaction(transaction):
+  dynamoResponse = dynamo.put_item(TableName=transactionTable, Item={
+    'guid':{'S': transaction['guid']},
+    'user':{'S': transaction['user']},
+    'hasMemoImage':{'BOOL': transaction['hasMemoImage']},
+    'date':{'S': transaction['date']},
+    'account':{'S': transaction['account']},
+    'category':{'S': transaction['category']},
+    'amount':{'N': transaction['amount']},
+    'memo':{'S': transaction['memo']},
+  })
+  
 
 def lambda_handler(event, context):
   method = event.get('requestContext', {'NONE'}).get('http', {'method': 'NONE'}).get('method', 'NONE')
@@ -67,6 +84,11 @@ def lambda_handler(event, context):
     return {
       'statusCode': 200,
       'body': getAllFinancialData(parameters['startDate'], parameters['endDate'])
+    }
+  if path == "/writeNewTransaction" and method == "POST":
+    return {
+      'statusCode': 200,
+      'body': writeNewTransaction(decompressRequest(body))
     }
   return {
     'statusCode': 501,

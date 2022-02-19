@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:budgies_budgets/helpers/backgroundData.dart';
 import 'package:flutter/material.dart';
@@ -40,7 +42,6 @@ Future<Map<String, dynamic>> generateRequestComponents(
   // Read the authority and apiKey from the secret file
   String fileContent = await rootBundle.loadString('assets/secret.json');
   Map<String, dynamic> secrets = await json.decode(fileContent);
-  log(secrets.toString());
   String authority = secrets["backendLocation"];
   String apiKey = secrets["apiKey"];
   Uri uri = Uri.https(authority, path, params);
@@ -58,14 +59,48 @@ Future<FinancialData> getAllFinancialData(DateTimeRange range) async {
     "endDate":
         "${range.end.year}-${range.end.month.toString().padLeft(2, "0")}-${range.end.day.toString().padLeft(2, "0")}"
   });
-  log(requestComponents.toString());
   // Make the request
   http.Response response = await http.get(requestComponents["uri"],
       headers: requestComponents["headers"]);
   // Decompress the response
-  log(response.body);
   var temp = decompressData(response.body);
   // Create the object and return it
   FinancialData d = FinancialData.fromJson(temp, range);
   return d;
+}
+
+Future<void> uploadMemoImage(Transaction t) async {
+  // Read the file bytes
+  File(t.memoImagePath!).readAsBytes().then((imageBytes) async {
+    // Create a new request for uploading the image
+    var requestComponents =
+        await generateRequestComponents("/uploadMemoImage", {'guid': t.guid});
+    // Send the image bytes to the backend in a compressed way
+    String data = compressData({'imageBytes': base64Encode(imageBytes)});
+    http.Response test = await http.post(requestComponents['uri'],
+        headers: requestComponents['headers'], body: data);
+  });
+}
+
+Future<Uint8List> getMemoImage(String guid) async {
+  // Create a new request for uploading the image
+  var requestComponents =
+      await generateRequestComponents("/getMemoImage", {'guid': guid});
+  http.Response response = await http.get(requestComponents['uri'],
+      headers: requestComponents['headers']);
+  var data = decompressData(response.body);
+  return base64Decode(data['imageBytes']);
+}
+
+Future<void> writeNewTransaction(Transaction t) async {
+  // Generate the request components
+  var requestComponents =
+      await generateRequestComponents("/writeNewTransaction", {});
+  // Send the request off to the backend, compressing the transaction for the body
+  http.post(requestComponents["uri"],
+      headers: requestComponents["headers"], body: compressData(t.toJson()));
+  // If the transaction has a memoImage then upload that too
+  if (t.hasMemoImage) {
+    uploadMemoImage(t);
+  }
 }

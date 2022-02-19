@@ -9,22 +9,22 @@ import 'package:svg_icon/svg_icon.dart';
 // Different categories that a transaction can be
 enum Category {
   Housing,
-  Transportation,
-  Groceries,
-  Food,
   Utilities,
+  Transportation,
   Insurance,
   Medical,
   Savings,
-  Personal,
-  Entertainment,
-  Miscellaneous,
-  Income,
   Transfer,
-  Giftcard,
   Fee,
+  Income,
+  Food,
+  Groceries,
+  Entertainment,
+  Personal,
   Subscription,
   Pet,
+  Miscellaneous,
+  Giftcard,
 }
 
 // Returns an icon depending on what category / size were given
@@ -151,8 +151,9 @@ class Transaction {
   double amount = 0.0;
   String memo = "";
   String user = "";
-  String? memoImageKey;
-  Image? memoImage;
+  bool hasMemoImage = false;
+  String? memoImagePath;
+  InteractiveViewer? memoImageWidget;
 
   Transaction();
   Transaction.withValues(
@@ -172,8 +173,8 @@ class Transaction {
         amount = json['amount'],
         memo = json['memo'],
         user = json['user'],
-        memoImageKey =
-            (json.containsKey("memoImageKey")) ? json['memoImageKey'] : "";
+        hasMemoImage =
+            (json.containsKey("hasMemoImage")) ? json['hasMemoImage'] : "";
   Map<String, dynamic> toJson() {
     return {
       "guid": guid,
@@ -184,7 +185,7 @@ class Transaction {
       "amount": amount,
       "memo": memo,
       "user": user,
-      "memoImageKey": (memoImage != null) ? memoImageKey : "none"
+      "hasMemoImage": hasMemoImage
     };
   }
 

@@ -1,9 +1,11 @@
 // Tracks the date, category, account, amount, and a memo for transactions,
 //   basis of all the data stored
 
+import 'package:budgies_budgets/helpers/backendRequests.dart';
 import 'package:budgies_budgets/helpers/backgroundData.dart';
 import 'package:budgies_budgets/widgets/editTransaction.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 
 class TransactionList extends StatefulWidget {
   final FinancialData data;
@@ -95,9 +97,13 @@ class TransactionListState extends State<TransactionList> {
                       child: Text(t.memo))),
               TableCell(
                 verticalAlignment: TableCellVerticalAlignment.middle,
-                child: (t.memoImage != null)
+                child: (t.hasMemoImage)
                     ? IconButton(
-                        onPressed: () {
+                        onPressed: () async {
+                          // If it's marked as having an image but the widget isn't there
+                          //   get the image from the backend and then display it
+                          t.memoImageWidget ??= InteractiveViewer(
+                              child: Image.memory(await getMemoImage(t.guid)));
                           showDialog(
                               context: context,
                               builder: (BuildContext context) {
@@ -107,7 +113,7 @@ class TransactionListState extends State<TransactionList> {
                                         Navigator.pop(context);
                                       },
                                       child: Text("Close"))
-                                ], content: t.memoImage);
+                                ], content: t.memoImageWidget);
                               });
                         },
                         icon: Icon(
