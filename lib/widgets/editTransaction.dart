@@ -37,6 +37,7 @@ class _editTransactionState extends State<editTransaction> {
   DateTime newDate = DateTime.now();
   bool confirmDelete = false;
   Image? transactionImage;
+  String? memoImagePath;
 
   @override
   void initState() {
@@ -183,6 +184,7 @@ class _editTransactionState extends State<editTransaction> {
                 transaction.memo = memoController.text;
                 if (transactionImage != null) {
                   transaction.hasMemoImage = true;
+                  transaction.memoImagePath = memoImagePath;
                   transaction.memoImageWidget =
                       InteractiveViewer(child: transactionImage!);
                   setState(() {
@@ -328,7 +330,10 @@ class _editTransactionState extends State<editTransaction> {
                                     onPressed: () {
                                       setState(() {
                                         transactionImage = null;
+                                        transaction.memoImagePath = null;
+                                        transaction.memoImageWidget = null;
                                         transaction.hasMemoImage = false;
+                                        deleteMemoImage(transaction.guid);
                                       });
                                     },
                                     icon: Icon(Icons.delete)),
@@ -338,10 +343,17 @@ class _editTransactionState extends State<editTransaction> {
                           child: IconButton(
                               onPressed: () async {
                                 FilePickerResult? file =
-                                    await FilePicker.platform.pickFiles();
+                                    await FilePicker.platform.pickFiles(
+                                        type: FileType.custom,
+                                        allowedExtensions: [
+                                      'jpg',
+                                      'jpeg',
+                                      'png'
+                                    ]);
                                 if (file != null) {
                                   String filePath =
                                       file.files[0].path.toString();
+                                  memoImagePath = filePath;
                                   transactionImage = Image.file(File(filePath));
                                 }
                               },
@@ -359,6 +371,7 @@ class _editTransactionState extends State<editTransaction> {
                                               source: ImageSource.camera);
                                       if (image != null) {
                                         setState(() {
+                                          memoImagePath = image.path;
                                           transactionImage =
                                               Image.file(File(image.path));
                                         });

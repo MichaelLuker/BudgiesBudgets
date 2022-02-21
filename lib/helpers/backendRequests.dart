@@ -77,7 +77,7 @@ Future<void> uploadMemoImage(Transaction t) async {
         await generateRequestComponents("/uploadMemoImage", {'guid': t.guid});
     // Send the image bytes to the backend in a compressed way
     String data = compressData({'imageBytes': base64Encode(imageBytes)});
-    http.Response test = await http.post(requestComponents['uri'],
+    http.post(requestComponents['uri'],
         headers: requestComponents['headers'], body: data);
   });
 }
@@ -90,6 +90,13 @@ Future<Uint8List> getMemoImage(String guid) async {
       headers: requestComponents['headers']);
   var data = decompressData(response.body);
   return base64Decode(data['imageBytes']);
+}
+
+Future<void> deleteMemoImage(String guid) async {
+  // Create a new request for uploading the image
+  var requestComponents =
+      await generateRequestComponents("/deleteMemoImage", {'guid': guid});
+  http.post(requestComponents['uri'], headers: requestComponents['headers']);
 }
 
 Future<void> writeNewTransaction(Transaction t) async {
@@ -121,4 +128,8 @@ Future<void> modifyTransaction(Transaction t) async {
   // Send the request off to the backend, compressing the transaction for the body
   http.post(requestComponents["uri"],
       headers: requestComponents["headers"], body: compressData(t.toJson()));
+  // If the transaction has a memoImage then upload that too
+  if (t.hasMemoImage) {
+    uploadMemoImage(t);
+  }
 }

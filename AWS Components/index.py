@@ -2,10 +2,12 @@ import boto3
 import base64
 import gzip
 import json
+import os
 
-accountTable='budgies-budgets-accounts'
-transactionTable='budgies-budgets-transactions'
-imageBucket='budgies-budgets-images-something blah blah blah'
+accountTable=os.environ['accountTable']
+transactionTable=os.environ['transactionTable']
+budgetTable=os.environ['budgetTable']
+imageBucket=os.environ['imageBucket']
 
 # Save the API key out here for quick reuse
 ssm = boto3.client('ssm')
@@ -13,6 +15,9 @@ apiKey = ssm.get_parameter(Name='budgies-budgets-api-key')['Parameter']['Value']
 
 # Dynamo client
 dynamo = boto3.client('dynamodb')
+
+# S3 client
+s3 = boto3.client('s3')
 
 # Reads the compressed and encoded body to a json object
 def decompressRequest(body):
@@ -70,6 +75,8 @@ def deleteTransaction(transaction):
     'guid':{'S': transaction['guid']}, 
     'user':{'S': transaction['user']}
   })
+  if transaction['hasMemoImage']:
+    deleteMemoImage(transaction['guid'])
 
 def modifyTransaction(transaction):
   dynamo.update_item(TableName=transactionTable, 
@@ -95,6 +102,18 @@ def modifyTransaction(transaction):
     UpdateExpression='SET #hmi=:hmi, #d=:d, #acc=:acc, #cat=:cat, #amt=:amt, #mem=:mem'
     )
 
+def uploadMemoImage(guid, body):
+  fullKey = guid[0:4] + "/" + guid
+  s3.put_object(Bucket=imageBucket, Key=fullKey, Body=str.encode(body))
+
+def getMemoImage(guid):
+  fullKey = guid[0:4] + "/" + guid
+  return s3.get_object(Bucket=imageBucket, Key=fullKey)['Body'].read().decode('utf-8')
+
+def deleteMemoImage(guid):
+  fullKey = guid[0:4] + "/" + guid
+  s3.delete_object(Bucket=imageBucket, Key=fullKey)
+
 def lambda_handler(event, context):
   method = event.get('requestContext', {'NONE'}).get('http', {'method': 'NONE'}).get('method', 'NONE')
   path = event.get('rawPath', 'NONE')
@@ -118,6 +137,21 @@ def lambda_handler(event, context):
     return {
       'statusCode': 200,
       'body': writeNewTransaction(decompressRequest(body))
+    }
+  if path == "/uploadMemoImage" and method == "POST":
+    return {
+      'statusCode': 200,
+      'body': uploadMemoImage(parameters['guid'], body)
+    }
+  if path == "/getMemoImage" and method == "GET":
+    return {
+      'statusCode': 200,
+      'body': getMemoImage(parameters['guid'])
+    }
+  if path == "/deleteMemoImage" and method == "POST":
+    return {
+      'statusCode': 200,
+      'body': deleteMemoImage(parameters['guid'])
     }
   if path == "/deleteTransaction" and method == "POST":
     return {

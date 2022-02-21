@@ -161,6 +161,12 @@ Resources:
                     'body': json.dumps('Hello! Please replace me with the real code')
                    }
       Role: !GetAtt LambdaRole.Arn
+      Environment:
+        Variables:
+          transactionTable: !Ref TransactionTable
+          accountTable: !Ref AccountTable
+          budgetTable: !Ref BudgetTable
+          imageBucket: !Ref S3ImageBucketName
   LambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:

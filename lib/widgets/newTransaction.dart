@@ -59,8 +59,9 @@ class _newTransactionState extends State<newTransaction> {
                   setState(() {
                     bulkImport = !bulkImport;
                   });
-                  FilePickerResult? file =
-                      await FilePicker.platform.pickFiles();
+                  FilePickerResult? file = await FilePicker.platform.pickFiles(
+                      type: FileType.custom,
+                      allowedExtensions: ['jpg', 'jpeg', 'png']);
                   if (file != null) {
                     String filePath = file.files[0].path.toString();
                     final csv = await readCsv(filePath);
@@ -253,10 +254,17 @@ class _newTransactionState extends State<newTransaction> {
                             child: IconButton(
                                 onPressed: () async {
                                   FilePickerResult? file =
-                                      await FilePicker.platform.pickFiles();
+                                      await FilePicker.platform.pickFiles(
+                                          type: FileType.custom,
+                                          allowedExtensions: [
+                                        'jpg',
+                                        'jpeg',
+                                        'png'
+                                      ]);
                                   if (file != null) {
                                     String filePath =
                                         file.files[0].path.toString();
+                                    imagePath = filePath;
                                     transactionImage =
                                         Image.file(File(filePath));
                                   }
