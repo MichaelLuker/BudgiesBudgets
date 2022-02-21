@@ -12,19 +12,20 @@ import 'package:image_picker/image_picker.dart';
 
 class newTransaction extends StatefulWidget {
   final FinancialData data;
-  final Function updateList;
-  const newTransaction({Key? key, required this.data, required this.updateList})
+  final Function recalculate;
+  const newTransaction(
+      {Key? key, required this.data, required this.recalculate})
       : super(key: key);
 
   @override
   _newTransactionState createState() =>
-      _newTransactionState(data: data, updateList: updateList);
+      _newTransactionState(data: data, recalculate: recalculate);
 }
 
 class _newTransactionState extends State<newTransaction> {
   final FinancialData data;
-  final Function updateList;
-  _newTransactionState({required this.data, required this.updateList});
+  final Function recalculate;
+  _newTransactionState({required this.data, required this.recalculate});
   TextEditingController amountController = TextEditingController();
   TextEditingController memoController = TextEditingController();
 
@@ -79,8 +80,10 @@ class _newTransactionState extends State<newTransaction> {
                         t.guid = generateGUID(t);
                         writeNewTransaction(t);
                         data.allTransactions.add(t);
+                        recalculate(t: t, action: "add");
                       }
-                      updateList();
+                      recalculate(
+                          regenerateRows: true, updateAccountList: true);
                     });
                     Navigator.of(context).pop();
                   }
@@ -120,7 +123,11 @@ class _newTransactionState extends State<newTransaction> {
                   data.allTransactions.add(newTransaction);
                   // Write the new transaction to the backend
                   writeNewTransaction(newTransaction);
-                  updateList();
+                  recalculate(
+                      t: newTransaction,
+                      action: "add",
+                      regenerateRows: true,
+                      updateAccountList: true);
                   Navigator.of(context).pop();
                 },
                 child: const Text(

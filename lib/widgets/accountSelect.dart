@@ -72,7 +72,9 @@ class AccountSelectState extends State<AccountSelect> {
                             if (value != null) {
                               data.currentAccount = value;
                               selectedAccount = value;
-                              recalculate(regenerateRows: true);
+                              recalculate(
+                                  regenerateRows: true,
+                                  updateAccountList: true);
                             }
                           });
                         })),
@@ -113,7 +115,8 @@ class AccountSelectState extends State<AccountSelect> {
                                             nameController.text = "";
                                             balanceController.text = "0.00";
                                             recalculate(
-                                                updateAccountDropdowns: true);
+                                                updateAccountDropdowns: true,
+                                                updateAccountList: true);
                                           });
                                           Navigator.of(context).pop();
                                         },
@@ -245,7 +248,8 @@ class AccountSelectState extends State<AccountSelect> {
                             data.currentAccount = "All";
                             recalculate(
                                 regenerateRows: true,
-                                updateAccountDropdowns: true);
+                                updateAccountDropdowns: true,
+                                updateAccountList: true);
                             confirmDelete = false;
                           }
                         });

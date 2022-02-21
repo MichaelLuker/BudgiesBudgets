@@ -1,6 +1,7 @@
 // Scaffold of the app, controlls display of everything and initial data load
 import 'dart:developer';
 import 'package:budgies_budgets/helpers/backendRequests.dart';
+import 'package:budgies_budgets/widgets/accountList.dart';
 import 'package:budgies_budgets/widgets/accountSelect.dart';
 import 'package:budgies_budgets/widgets/newTransaction.dart';
 import 'package:budgies_budgets/widgets/transactionList.dart';
@@ -55,25 +56,59 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   bool calledOnce = false;
   late FinancialData data;
   GlobalKey<TransactionListState> transactionListKey = GlobalKey();
+  GlobalKey<AccountListState> accountListKey = GlobalKey();
   GlobalKey<AccountSelectState> accountSelectKey = GlobalKey();
   late UserSelect userSelect;
   late AccountSelect accountSelect;
   late MonthSelect monthSelect;
   late TransactionList transactionList;
+  late AccountList accountList;
   late AnimationController syncAnimationController;
   bool syncing = false;
 
   // Function to call all the other pieces to recalculate graphs / budgets when
   //   transactions are created, deleted, or modified
   void recalculate(
-      {bool regenerateRows = false, bool updateAccountDropdowns = false}) {
+      {bool regenerateRows = false,
+      bool updateAccountDropdowns = false,
+      bool updateAccountList = false,
+      // ignore: avoid_init_to_null
+      Transaction? t = null,
+      String? action = null,
+      double? oldValue = null}) {
     log("Reticulating Splines...");
+    // If a transaction is sent apply the modification to the account then do the row regen
+    if (t != null && action != null) {
+      switch (action) {
+        case "add":
+          data.accounts
+              .firstWhere((a) => t.user == a.user && t.account == a.name)
+              .balance += t.amount;
+          break;
+        case "modify":
+          data.accounts
+              .firstWhere((a) => t.user == a.user && t.account == a.name)
+              .balance += t.amount - oldValue!;
+          break;
+        case "delete":
+          data.accounts
+              .firstWhere((a) => t.user == a.user && t.account == a.name)
+              .balance -= t.amount;
+          break;
+      }
+      modifyAccount(data.accounts
+          .firstWhere((a) => t.user == a.user && t.account == a.name));
+    }
     if (regenerateRows) {
       transactionListKey.currentState?.generateRows();
     }
     if (updateAccountDropdowns) {
       accountSelectKey.currentState?.updateAccountDropdown();
     }
+    if (updateAccountList) {
+      accountListKey.currentState?.generateRows();
+    }
+
     log("Done!");
   }
 
@@ -111,6 +146,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       );
       transactionList = TransactionList(
           key: transactionListKey, data: data, recalculate: recalculate);
+      accountList = AccountList(
+          key: accountListKey, data: data, recalculate: recalculate);
       initialized = true;
     });
   }
@@ -135,8 +172,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                     builder: (BuildContext context) {
                       return newTransaction(
                         data: data,
-                        updateList:
-                            transactionListKey.currentState!.generateRows,
+                        recalculate: recalculate,
                       );
                     });
               },
@@ -185,6 +221,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                               child: ListBody(
                             children: [
                               transactionList,
+                              const Spacer(),
+                              accountList,
                               const Spacer(),
                             ],
                           )),

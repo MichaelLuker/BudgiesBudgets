@@ -65,7 +65,8 @@ class _UserSelect extends State<UserSelect> {
                               data.categoryFilter = "Transactions";
                               recalculate(
                                   regenerateRows: true,
-                                  updateAccountDropdowns: true);
+                                  updateAccountDropdowns: true,
+                                  updateAccountList: true);
                             }
                           });
                         })),
@@ -127,7 +128,8 @@ class _UserSelect extends State<UserSelect> {
                           data.users.add(userController.text);
                           data.currentUser = userController.text;
                           userController.text = "";
-                          recalculate(regenerateRows: true);
+                          recalculate(
+                              regenerateRows: true, updateAccountList: true);
                         });
                       });
                     },
@@ -173,7 +175,8 @@ class _UserSelect extends State<UserSelect> {
                             // Then delete the user
                             data.users.remove(data.currentUser);
                             data.currentUser = data.users[0];
-                            recalculate(regenerateRows: true);
+                            recalculate(
+                                regenerateRows: true, updateAccountList: true);
                             confirmDelete = false;
                           }
                         });

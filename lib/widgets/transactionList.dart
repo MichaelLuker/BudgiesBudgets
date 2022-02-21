@@ -25,7 +25,7 @@ class TransactionListState extends State<TransactionList> {
   final Function recalculate;
   TransactionListState(
       {Key? key, required this.data, required this.recalculate});
-  bool expanded = true;
+  bool expanded = false;
   List<TableRow> rows = [];
   final TextStyle label = const TextStyle(color: Colors.amber, fontSize: 12);
   final TextStyle stringValue = const TextStyle(color: Colors.lightBlueAccent);

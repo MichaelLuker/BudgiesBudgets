@@ -94,7 +94,11 @@ class _editTransactionState extends State<editTransaction> {
                   if (confirmDelete) {
                     deleteTransaction(transaction);
                     data.allTransactions.remove(transaction);
-                    recalculate(regenerateRows: true);
+                    recalculate(
+                        regenerateRows: true,
+                        t: transaction,
+                        action: "delete",
+                        updateAccountList: true);
                     setState(() {
                       confirmDelete = false;
                     });
@@ -116,7 +120,8 @@ class _editTransactionState extends State<editTransaction> {
                           child: CalendarDatePicker(
                               initialDate: data.endDate,
                               firstDate: DateTime.fromMillisecondsSinceEpoch(0),
-                              lastDate: DateTime.now(),
+                              lastDate:
+                                  DateTime.now().add(const Duration(days: 365)),
                               onDateChanged: (e) {
                                 setState(() {
                                   newDate = e;
@@ -156,10 +161,15 @@ class _editTransactionState extends State<editTransaction> {
                       memo: transaction.memo);
 
                   setState(() {
+                    writeNewTransaction(newTransaction);
                     data.allTransactions.add(newTransaction);
                     confirmDelete = false;
                   });
-                  recalculate(regenerateRows: true);
+                  recalculate(
+                      regenerateRows: true,
+                      t: newTransaction,
+                      action: "add",
+                      updateAccountList: true);
                   Navigator.of(context).pop();
                 });
               },
@@ -177,6 +187,7 @@ class _editTransactionState extends State<editTransaction> {
               )),
           TextButton(
               onPressed: () {
+                double oldVal = transaction.amount;
                 try {
                   transaction.amount = double.parse(amountController.text);
                 } catch (e) {
@@ -193,7 +204,12 @@ class _editTransactionState extends State<editTransaction> {
                   });
                 }
                 modifyTransaction(transaction);
-                recalculate(regenerateRows: true);
+                recalculate(
+                    regenerateRows: true,
+                    t: transaction,
+                    oldValue: oldVal,
+                    action: "modify",
+                    updateAccountList: true);
                 Navigator.of(context).pop();
               },
               child: const Text(
