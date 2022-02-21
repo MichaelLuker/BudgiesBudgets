@@ -74,6 +74,7 @@ class _newTransactionState extends State<newTransaction> {
                             amount: double.parse(row[4]),
                             memo: row[5]);
                         t.guid = generateGUID(t);
+                        writeNewTransaction(t);
                         data.allTransactions.add(t);
                       }
                       updateList();

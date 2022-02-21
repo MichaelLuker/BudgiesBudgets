@@ -64,7 +64,6 @@ def writeNewTransaction(transaction):
     'amount':{'N': transaction['amount']},
     'memo':{'S': transaction['memo']},
   })
-  
 
 def lambda_handler(event, context):
   method = event.get('requestContext', {'NONE'}).get('http', {'method': 'NONE'}).get('method', 'NONE')

@@ -20,7 +20,7 @@ enum Category {
   Food,
   Groceries,
   Entertainment,
-  Personal,
+  Shopping,
   Subscription,
   Pet,
   Miscellaneous,
@@ -46,8 +46,8 @@ Widget categoryToIcon(Category c, double size) {
       return Icon(Icons.favorite, size: size);
     case Category.Savings:
       return Icon(Icons.savings, size: size);
-    case Category.Personal:
-      return Icon(Icons.face, size: size);
+    case Category.Shopping:
+      return Icon(Icons.store, size: size);
     case Category.Entertainment:
       return SvgIcon(
         "icons/rocket_launch_white_24dp.svg",
@@ -82,6 +82,8 @@ Category categoryFromString(String s) {
       return Category.Transportation;
     case "Food":
       return Category.Food;
+    case "Groceries":
+      return Category.Groceries;
     case "Utilities":
       return Category.Utilities;
     case "Insurance":
@@ -90,8 +92,8 @@ Category categoryFromString(String s) {
       return Category.Medical;
     case "Savings":
       return Category.Savings;
-    case "Personal":
-      return Category.Personal;
+    case "Shopping":
+      return Category.Shopping;
     case "Entertainment":
       return Category.Entertainment;
     case "Miscellaneous":
@@ -109,7 +111,7 @@ Category categoryFromString(String s) {
     case "Pet":
       return Category.Pet;
     default:
-      return Category.Personal;
+      return Category.Shopping;
   }
 }
 
@@ -146,7 +148,7 @@ class Account {
 class Transaction {
   String guid = "";
   DateTime date = DateTime.now();
-  Category category = Category.Personal;
+  Category category = Category.Shopping;
   String account = "Visa";
   double amount = 0.0;
   String memo = "";

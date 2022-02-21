@@ -157,8 +157,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   void loadDataThenWidgets() async {
     //data = await loadInitialTransactions();
+    // Start with a month to date view
+    var now = DateTime.now();
     data = await getAllFinancialData(DateTimeRange(
-        start: DateTime.parse("2022-01-01"), end: DateTime.now()));
+        start: DateTime.parse(
+            "${now.year}-${now.month.toString().padLeft(2, "0")}-01"),
+        end: now));
     setState(() {
       userSelect = UserSelect(data: data, recalculate: recalculate);
       accountSelect = AccountSelect(
