@@ -36,7 +36,7 @@ def getAllFinancialData(start, end):
       'user': item['user']['S'],
       'name': item['name']['S'],
       'balance': float(item['balance']['N']),
-      'isGiftcard': item['isGiftcard']['BOOL']
+      'isGiftcard': str(item['isGiftcard']['BOOL']).lower()
     })
   # Then the transactions in the date range
   transactionResults = dynamo.scan(TableName=transactionTable, 
@@ -114,6 +114,36 @@ def deleteMemoImage(guid):
   fullKey = guid[0:4] + "/" + guid
   s3.delete_object(Bucket=imageBucket, Key=fullKey)
 
+def createNewAccount(account):
+  dynamo.put_item(TableName=accountTable, Item={
+    'user': {'S': account['user']},
+    'name': {'S': account['name']},
+    'balance': {'N': str(account['balance'])},
+    'isGiftcard': {'BOOL': account['isGiftcard']}
+  })
+
+def modifyAccount(account):
+  dynamo.update_item(TableName=accountTable, 
+    Key={
+      'user': {'S': account['user']},
+      'name': {'S': account['name']}
+    }, 
+    ExpressionAttributeNames={
+      '#b':'balance',
+      '#igc':'isGiftcard'
+    }, 
+    ExpressionAttributeValues={
+      ':b':{'N': str(account['balance'])},
+      ':igc':{'BOOL': account['isGiftcard']}
+    },
+    UpdateExpression='SET #b=:b, #igc=:igc')
+
+def deleteAccount(account):
+  dynamo.delete_item(TableName=accountTable, Key={
+    'user': {'S': account['user']},
+    'name': {'S': account['name']}
+  })
+
 def lambda_handler(event, context):
   method = event.get('requestContext', {'NONE'}).get('http', {'method': 'NONE'}).get('method', 'NONE')
   path = event.get('rawPath', 'NONE')
@@ -162,6 +192,21 @@ def lambda_handler(event, context):
     return {
       'statusCode': 200,
       'body': modifyTransaction(decompressRequest(body))
+    }
+  if path == "/createNewAccount" and method == "POST":
+    return {
+      'statusCode': 200,
+      'body': createNewAccount(decompressRequest(body))
+    }
+  if path == "/modifyAccount" and method == "POST":
+    return {
+      'statusCode': 200,
+      'body': modifyAccount(decompressRequest(body))
+    }
+  if path == "/deleteAccount" and method == "POST":
+    return {
+      'statusCode': 200,
+      'body': deleteAccount(decompressRequest(body))
     }
   return {
     'statusCode': 501,

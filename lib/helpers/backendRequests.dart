@@ -65,8 +65,10 @@ Future<FinancialData> getAllFinancialData(DateTimeRange range) async {
       headers: requestComponents["headers"]);
   // Decompress the response
   var temp = decompressData(response.body);
-  // Create the object and return it
+  // Create the object, sort it, and return it
   FinancialData d = FinancialData.fromJson(temp, range);
+  d.sortAccounts();
+  d.sortTransactions();
   return d;
 }
 
@@ -133,4 +135,29 @@ Future<void> modifyTransaction(Transaction t) async {
   if (t.hasMemoImage) {
     uploadMemoImage(t);
   }
+}
+
+Future<void> createNewAccount(Account a) async {
+  // Generate the request components
+  var requestComponents =
+      await generateRequestComponents("/createNewAccount", {});
+  // Send the request off to the backend, compressing the transaction for the body
+  http.post(requestComponents["uri"],
+      headers: requestComponents["headers"], body: compressData(a.toJson()));
+}
+
+Future<void> modifyAccount(Account a) async {
+  // Generate the request components
+  var requestComponents = await generateRequestComponents("/modifyAccount", {});
+  // Send the request off to the backend, compressing the transaction for the body
+  http.post(requestComponents["uri"],
+      headers: requestComponents["headers"], body: compressData(a.toJson()));
+}
+
+Future<void> deleteAccount(Account a) async {
+  // Generate the request components
+  var requestComponents = await generateRequestComponents("/deleteAccount", {});
+  // Send the request off to the backend, compressing the transaction for the body
+  http.post(requestComponents["uri"],
+      headers: requestComponents["headers"], body: compressData(a.toJson()));
 }

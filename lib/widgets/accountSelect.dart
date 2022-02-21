@@ -1,5 +1,6 @@
 // ignore_for_file: no_logic_in_create_state, file_names
 
+import 'package:budgies_budgets/helpers/backendRequests.dart';
 import 'package:budgies_budgets/helpers/backgroundData.dart';
 import 'package:flutter/material.dart';
 
@@ -75,6 +76,7 @@ class AccountSelectState extends State<AccountSelect> {
                             }
                           });
                         })),
+                // For creating a new account
                 IconButton(
                     onPressed: () {
                       showDialog(
@@ -98,6 +100,21 @@ class AccountSelectState extends State<AccountSelect> {
                                         )),
                                     TextButton(
                                         onPressed: () {
+                                          Account newAcct = Account.withValues(
+                                              user: data.currentUser,
+                                              name: nameController.text,
+                                              balance: double.parse(
+                                                  balanceController.text),
+                                              isGiftcard: isGiftcard);
+                                          createNewAccount(newAcct);
+                                          setState(() {
+                                            data.accounts.add(newAcct);
+                                            isGiftcard = false;
+                                            nameController.text = "";
+                                            balanceController.text = "0.00";
+                                            recalculate(
+                                                updateAccountDropdowns: true);
+                                          });
                                           Navigator.of(context).pop();
                                         },
                                         child: const Text(
@@ -171,21 +188,10 @@ class AccountSelectState extends State<AccountSelect> {
                                     ],
                                   )));
                             });
-                          }).then((e) {
-                        setState(() {
-                          data.accounts.add(Account.withValues(
-                              user: data.currentUser,
-                              name: nameController.text,
-                              balance: 0,
-                              isGiftcard: isGiftcard));
-                          data.sortAccounts();
-                          nameController.text = "";
-                          balanceController.text = "";
-                          isGiftcard = false;
-                        });
-                      });
+                          });
                     },
                     icon: const Icon(Icons.account_balance)),
+                // For deleting an account
                 IconButton(
                     onPressed: () {
                       showDialog(
@@ -194,7 +200,7 @@ class AccountSelectState extends State<AccountSelect> {
                             return AlertDialog(
                               title: const Text("Confirm Account Deletion"),
                               content: Text(
-                                  "Please confirm that ${data.currentAccount} should be deleted..."),
+                                  "Please confirm that ${data.currentAccount} and all associated transactions should be deleted..."),
                               actions: [
                                 TextButton(
                                     onPressed: () {
@@ -222,13 +228,24 @@ class AccountSelectState extends State<AccountSelect> {
                         setState(() {
                           if (data.accounts.length > 1 && confirmDelete) {
                             // Delete the transactions for the account
+                            for (Transaction t in data.allTransactions) {
+                              if (t.account == data.currentAccount) {
+                                deleteTransaction(t);
+                              }
+                            }
                             data.allTransactions.removeWhere(
                                 (t) => t.account == data.currentAccount);
                             // Then delete the account
+                            deleteAccount(data.accounts
+                                .where(
+                                    (acct) => acct.name == data.currentAccount)
+                                .first);
                             data.accounts.removeWhere((element) =>
                                 element.name == data.currentAccount);
-                            data.currentAccount = data.accounts[0].name;
-                            recalculate(regenerateRows: true);
+                            data.currentAccount = "All";
+                            recalculate(
+                                regenerateRows: true,
+                                updateAccountDropdowns: true);
                             confirmDelete = false;
                           }
                         });
