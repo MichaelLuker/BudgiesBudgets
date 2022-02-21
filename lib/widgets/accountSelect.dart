@@ -1,6 +1,4 @@
-// ignore_for_file: no_logic_in_create_state
-
-import 'dart:developer';
+// ignore_for_file: no_logic_in_create_state, file_names
 
 import 'package:budgies_budgets/helpers/backgroundData.dart';
 import 'package:flutter/material.dart';
@@ -87,7 +85,7 @@ class AccountSelectState extends State<AccountSelect> {
                               return AlertDialog(
                                   titlePadding: const EdgeInsets.all(8),
                                   contentPadding: const EdgeInsets.all(8),
-                                  title: Container(child: Text("New Account")),
+                                  title: const Text("New Account"),
                                   actions: [
                                     TextButton(
                                         onPressed: () {
@@ -187,14 +185,14 @@ class AccountSelectState extends State<AccountSelect> {
                         });
                       });
                     },
-                    icon: Icon(Icons.account_balance)),
+                    icon: const Icon(Icons.account_balance)),
                 IconButton(
                     onPressed: () {
                       showDialog(
                           context: context,
                           builder: (context) {
                             return AlertDialog(
-                              title: Text("Confirm Account Deletion"),
+                              title: const Text("Confirm Account Deletion"),
                               content: Text(
                                   "Please confirm that ${data.currentAccount} should be deleted..."),
                               actions: [
@@ -236,7 +234,7 @@ class AccountSelectState extends State<AccountSelect> {
                         });
                       });
                     },
-                    icon: Icon(Icons.dangerous))
+                    icon: const Icon(Icons.dangerous))
               ],
             ),
           ),

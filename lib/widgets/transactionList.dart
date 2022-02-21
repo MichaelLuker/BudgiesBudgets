@@ -1,11 +1,12 @@
 // Tracks the date, category, account, amount, and a memo for transactions,
 //   basis of all the data stored
 
+// ignore_for_file: file_names, no_logic_in_create_state
+
 import 'package:budgies_budgets/helpers/backendRequests.dart';
 import 'package:budgies_budgets/helpers/backgroundData.dart';
 import 'package:budgies_budgets/widgets/editTransaction.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 
 class TransactionList extends StatefulWidget {
   final FinancialData data;
@@ -111,11 +112,11 @@ class TransactionListState extends State<TransactionList> {
                                       onPressed: () {
                                         Navigator.pop(context);
                                       },
-                                      child: Text("Close"))
+                                      child: const Text("Close"))
                                 ], content: t.memoImageWidget);
                               });
                         },
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.image,
                           size: 18,
                         ))

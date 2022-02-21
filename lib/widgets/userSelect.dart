@@ -1,4 +1,4 @@
-// ignore_for_file: no_logic_in_create_state
+// ignore_for_file: no_logic_in_create_state, file_names
 
 import 'package:budgies_budgets/helpers/backgroundData.dart';
 import 'package:flutter/material.dart';
@@ -77,7 +77,7 @@ class _UserSelect extends State<UserSelect> {
                             return AlertDialog(
                                 titlePadding: const EdgeInsets.all(8),
                                 contentPadding: const EdgeInsets.all(8),
-                                title: Container(child: Text("New User")),
+                                title: const Text("New User"),
                                 actions: [
                                   TextButton(
                                       onPressed: () {
@@ -131,14 +131,14 @@ class _UserSelect extends State<UserSelect> {
                         });
                       });
                     },
-                    icon: Icon(Icons.person_add)),
+                    icon: const Icon(Icons.person_add)),
                 IconButton(
                     onPressed: () {
                       showDialog(
                           context: context,
                           builder: (context) {
                             return AlertDialog(
-                              title: Text("Confirm User Deletion"),
+                              title: const Text("Confirm User Deletion"),
                               content: Text(
                                   "Please confirm that user ${data.currentUser} should be deleted..."),
                               actions: [
@@ -179,7 +179,7 @@ class _UserSelect extends State<UserSelect> {
                         });
                       });
                     },
-                    icon: Icon(Icons.person_remove))
+                    icon: const Icon(Icons.person_remove))
               ],
             ),
           ),

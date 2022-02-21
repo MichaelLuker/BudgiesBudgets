@@ -1,5 +1,5 @@
 // Objects to be able to store all the data for the different widgets to interact with
-// ignore_for_file: constant_identifier_names
+// ignore_for_file: constant_identifier_names, file_names
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 
@@ -291,8 +291,8 @@ class FinancialData {
     // For each transaction available, check if it's in the date range
     for (Transaction t in allTransactions) {
       // Allow it to be on the actual day of the start or end
-      if (t.date.isAfter(startDate.subtract(Duration(days: 1))) &&
-          t.date.isBefore(endDate.add(Duration(days: 1))) &&
+      if (t.date.isAfter(startDate.subtract(const Duration(days: 1))) &&
+          t.date.isBefore(endDate.add(const Duration(days: 1))) &&
           t.user == currentUser &&
           (t.account == currentAccount || currentAccount == "All") &&
           (t.category == categoryFromString(categoryFilter) ||
@@ -311,11 +311,11 @@ class FinancialData {
     List<DropdownMenuItem<String>> r = [];
     // Add the all option
     if (all) {
-      r.add(DropdownMenuItem<String>(
+      r.add(const DropdownMenuItem<String>(
           value: "All",
           child: Text(
             "All",
-            style: const TextStyle(color: Colors.lightBlueAccent),
+            style: TextStyle(color: Colors.lightBlueAccent),
           )));
     }
     for (Account a in accounts) {

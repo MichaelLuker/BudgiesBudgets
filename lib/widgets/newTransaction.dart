@@ -1,5 +1,5 @@
 // All the parts for filling out details for a new transaction
-import 'dart:developer';
+// ignore_for_file: file_names, camel_case_types, no_logic_in_create_state
 
 import 'package:budgies_budgets/helpers/backendRequests.dart';
 import 'package:file_picker/file_picker.dart';
@@ -51,8 +51,8 @@ class _newTransactionState extends State<newTransaction> {
                   const BoxDecoration(border: Border(bottom: BorderSide())),
               child: Center(
                   child: bulkImport
-                      ? Text("Bulk Transaction Import")
-                      : Text("New Transaction Details"))),
+                      ? const Text("Bulk Transaction Import")
+                      : const Text("New Transaction Details"))),
           actions: [
             TextButton(
                 onPressed: () async {
@@ -152,8 +152,8 @@ class _newTransactionState extends State<newTransaction> {
                                   initialDate: DateTime.now(),
                                   firstDate:
                                       DateTime.fromMillisecondsSinceEpoch(0),
-                                  lastDate:
-                                      DateTime.now().add(Duration(days: 365)))
+                                  lastDate: DateTime.now()
+                                      .add(const Duration(days: 365)))
                               .then((value) {
                             setState(() {
                               if (value != null) {
@@ -269,7 +269,7 @@ class _newTransactionState extends State<newTransaction> {
                                         Image.file(File(filePath));
                                   }
                                 },
-                                icon: Icon(
+                                icon: const Icon(
                                   Icons.upload_file,
                                 )),
                           ),
@@ -290,7 +290,7 @@ class _newTransactionState extends State<newTransaction> {
                                           });
                                         }
                                       },
-                                      icon: Icon(
+                                      icon: const Icon(
                                         Icons.add_a_photo,
                                       )),
                                 )

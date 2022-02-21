@@ -1,5 +1,6 @@
 // All the parts for filling out details for a new transaction
-import 'dart:developer';
+// ignore_for_file: file_names, camel_case_types, no_logic_in_create_state
+
 import 'dart:io';
 
 import 'package:budgies_budgets/helpers/backendRequests.dart';
@@ -226,8 +227,8 @@ class _editTransactionState extends State<editTransaction> {
                                 initialDate: DateTime.now(),
                                 firstDate:
                                     DateTime.fromMillisecondsSinceEpoch(0),
-                                lastDate:
-                                    DateTime.now().add(Duration(days: 365)))
+                                lastDate: DateTime.now()
+                                    .add(const Duration(days: 365)))
                             .then((value) {
                           setState(() {
                             if (value != null) {
@@ -336,7 +337,7 @@ class _editTransactionState extends State<editTransaction> {
                                         deleteMemoImage(transaction.guid);
                                       });
                                     },
-                                    icon: Icon(Icons.delete)),
+                                    icon: const Icon(Icons.delete)),
                               )
                             : Container(),
                         Expanded(
@@ -357,7 +358,7 @@ class _editTransactionState extends State<editTransaction> {
                                   transactionImage = Image.file(File(filePath));
                                 }
                               },
-                              icon: Icon(
+                              icon: const Icon(
                                 Icons.upload_file,
                               )),
                         ),
@@ -377,7 +378,7 @@ class _editTransactionState extends State<editTransaction> {
                                         });
                                       }
                                     },
-                                    icon: Icon(
+                                    icon: const Icon(
                                       Icons.add_a_photo,
                                     )),
                               )

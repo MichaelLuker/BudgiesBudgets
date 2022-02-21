@@ -1,4 +1,4 @@
-// ignore_for_file: no_logic_in_create_state
+// ignore_for_file: no_logic_in_create_state, file_names
 
 import 'package:budgies_budgets/helpers/backgroundData.dart';
 import 'package:flutter/material.dart';
@@ -52,7 +52,8 @@ class _MonthSelectState extends State<MonthSelect> {
                   showDateRangePicker(
                           context: context,
                           firstDate: DateTime.fromMillisecondsSinceEpoch(0),
-                          lastDate: DateTime.now().add(Duration(days: 365)),
+                          lastDate:
+                              DateTime.now().add(const Duration(days: 365)),
                           initialDateRange: DateTimeRange(
                               start: data.startDate, end: data.endDate))
                       .then((value) {
