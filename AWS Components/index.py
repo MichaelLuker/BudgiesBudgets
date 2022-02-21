@@ -54,15 +54,21 @@ def getAllFinancialData(start, end):
   return compressString(json.dumps(returnData))
 
 def writeNewTransaction(transaction):
-  dynamoResponse = dynamo.put_item(TableName=transactionTable, Item={
+  dynamo.put_item(TableName=transactionTable, Item={
     'guid':{'S': transaction['guid']},
     'user':{'S': transaction['user']},
     'hasMemoImage':{'BOOL': transaction['hasMemoImage']},
     'date':{'S': transaction['date']},
     'account':{'S': transaction['account']},
     'category':{'S': transaction['category']},
-    'amount':{'N': transaction['amount']},
+    'amount':{'N': str(transaction['amount'])},
     'memo':{'S': transaction['memo']},
+  })
+
+def deleteTransaction(transaction):
+  dynamo.delete_item(TableName=transactionTable, Key={
+    'guid':{'S': transaction['guid']}, 
+    'user':{'S': transaction['user']}
   })
 
 def lambda_handler(event, context):
@@ -88,6 +94,11 @@ def lambda_handler(event, context):
     return {
       'statusCode': 200,
       'body': writeNewTransaction(decompressRequest(body))
+    }
+  if path == "/deleteTransaction" and method == "POST":
+    return {
+      'statusCode': 200,
+      'body': deleteTransaction(decompressRequest(body))
     }
   return {
     'statusCode': 501,

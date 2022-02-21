@@ -2,6 +2,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:budgies_budgets/helpers/backendRequests.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:budgies_budgets/helpers/backgroundData.dart';
@@ -9,27 +10,27 @@ import 'package:image_picker/image_picker.dart';
 
 class editTransaction extends StatefulWidget {
   final Transaction transaction;
-  final Function updateList;
+  final Function recalculate;
   final FinancialData data;
   const editTransaction(
       {Key? key,
       required this.transaction,
-      required this.updateList,
+      required this.recalculate,
       required this.data})
       : super(key: key);
 
   @override
   _editTransactionState createState() => _editTransactionState(
-      transaction: transaction, updateList: updateList, data: data);
+      transaction: transaction, recalculate: recalculate, data: data);
 }
 
 class _editTransactionState extends State<editTransaction> {
   final Transaction transaction;
-  final Function updateList;
+  final Function recalculate;
   final FinancialData data;
   _editTransactionState(
       {required this.transaction,
-      required this.updateList,
+      required this.recalculate,
       required this.data});
   TextEditingController amountController = TextEditingController();
   TextEditingController memoController = TextEditingController();
@@ -89,8 +90,9 @@ class _editTransactionState extends State<editTransaction> {
                       );
                     }).then((e) {
                   if (confirmDelete) {
+                    deleteTransaction(transaction);
                     data.allTransactions.remove(transaction);
-                    updateList();
+                    recalculate(regenerateRows: true);
                     setState(() {
                       confirmDelete = false;
                     });
@@ -155,7 +157,7 @@ class _editTransactionState extends State<editTransaction> {
                     data.allTransactions.add(newTransaction);
                     confirmDelete = false;
                   });
-                  updateList();
+                  recalculate(regenerateRows: true);
                   Navigator.of(context).pop();
                 });
               },
@@ -187,7 +189,7 @@ class _editTransactionState extends State<editTransaction> {
                     transactionImage = null;
                   });
                 }
-                updateList();
+                recalculate(regenerateRows: true);
                 Navigator.of(context).pop();
               },
               child: const Text(

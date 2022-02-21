@@ -25,7 +25,6 @@ class TransactionListState extends State<TransactionList> {
   TransactionListState(
       {Key? key, required this.data, required this.recalculate});
   bool expanded = true;
-  bool confirmDelete = false;
   List<TableRow> rows = [];
   final TextStyle label = const TextStyle(color: Colors.amber, fontSize: 12);
   final TextStyle stringValue = const TextStyle(color: Colors.lightBlueAccent);
@@ -61,7 +60,7 @@ class TransactionListState extends State<TransactionList> {
                               builder: (BuildContext context) {
                                 return editTransaction(
                                     transaction: t,
-                                    updateList: generateRows,
+                                    recalculate: recalculate,
                                     data: data);
                               });
                         },
