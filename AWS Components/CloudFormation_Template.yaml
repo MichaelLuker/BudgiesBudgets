@@ -1,31 +1,79 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: Template to create the serverless backend for BudgiesBudgets
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - 
+        Label: 
+          default: Resource Names
+        Parameters:
+          - APIGatewayName
+          - LambdaFunctionName
+          - IAMRoleName
+          - S3ImageBucketName
+          - APIKeyName
+          - AccountTableName
+          - BudgetTableName
+          - TransactionTableName
+      - 
+        Label:
+          default: Important Values
+        Parameters:
+          - APIKey
+          - PublicRoute53Zone
+          - DNSRecord
+          - ACMCertificateArn
+    ParameterLabels:
+      APIGatewayName:
+        default: Name of the API Gateway resource in the AWS console
+      LambdaFunctionName:
+        default: Name of the backend lambda function
+      IAMRoleName:
+        default: Name of the IAM role the lambda uses
+      S3ImageBucketName:
+        default: Name of the bucket to save memo images
+      APIKeyName:
+        default: Name of the parameter store param to hold the API key
+      AccountTableName:
+        default: Name of the table that holds account information
+      BudgetTableName:
+        default: Name of the table that holds budget information
+      TransactionTableName:
+        default: Name of the table that holds transaction information
+      APIKey:
+        default: Value to verify an API request to the backend lambda
+      PublicRoute53Zone:
+        default: Zone to create a record for the backend in
+      DNSRecord:
+        default: Record to create in Route53 for the backend (like api.example.com)
+      ACMCertificateArn:
+        default: ARN to certificate that allows the set dns record to use TLS
 Parameters:
   APIKey:
     Type: String
-    Description: Key for accessing API gateway
     NoEcho: true
-    Default: not-set
-  LambdaFunctionName:
-    Type: String
-    Description: Name of the lambda function
-    Default: budgies-budgets-backend
-  S3ImageBucketName:
-    Type: String
-    Description: Name of the s3 bucket for memo images to go to
-    Default: budgies-budgets-images-YourAccountNumberHere
   PublicRoute53Zone:
     Type: String
-    Description: Zone to add a public record to
-    Default: not-set
-  PublicDomain:
+  DNSRecord:
     Type: String
-    Description: Domain used for piecing the record together
-    Default: not-set
   ACMCertificateArn:
     Type: String
-    Description: ACM ARN to use for SSL on API Gateway
-    Default: not-set
+  APIGatewayName:
+    Type: String
+  LambdaFunctionName:
+    Type: String
+  IAMRoleName:
+    Type: String
+  S3ImageBucketName:
+    Type: String
+  APIKeyName:
+    Type: String
+  AccountTableName:
+    Type: String
+  BudgetTableName:
+    Type: String
+  TransactionTableName:
+    Type: String
 Resources:
   # IAM Roles / permissions
   LambdaRole:
@@ -41,7 +89,7 @@ Resources:
             Action:
               - 'sts:AssumeRole'
       Description: "Role for lambda to use to interface with s3, dynamo, param store"
-      RoleName: BudgiesBudgets_Lambda_Role
+      RoleName: !Ref IAMRoleName
       Policies: 
         - PolicyName: Lambda_Execution
           PolicyDocument:
@@ -88,7 +136,10 @@ Resources:
                   - "dynamodb:Scan"
                   - "dynamodb:UpdateItem"
                   - "dynamodb:UpdateTimeToLive"
-                Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/budgies-budgets-*"
+                Resource: 
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${AccountTableName}"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${BudgetTableName}"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TransactionTableName}"
         - PolicyName: SSM_Access
           PolicyDocument:
             Version: "2012-10-17"
@@ -98,13 +149,13 @@ Resources:
                   - "ssm:Get*"
                   - "ssm:List*"
                   - "ssm:Describe*"
-                Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/budgies-budgets-api-key"
+                Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${APIKeyName}"
   # Parameter
   APIKeyParameter:
     Type: AWS::SSM::Parameter
     Properties:
       Description: API Key for API Gateway access
-      Name: budgies-budgets-api-key
+      Name: !Ref APIKeyName
       Type: String
       Value: !Ref APIKey
   # Route53 record
@@ -113,7 +164,7 @@ Resources:
     Properties:
       HostedZoneId: !Ref PublicRoute53Zone
       RecordSets:
-        - Name: !Sub bbb.${PublicDomain}
+        - Name: !Sub ${DNSRecord}
           Type: A
           AliasTarget:
             DNSName: !GetAtt CustomAPIDomain.RegionalDomainName
@@ -123,7 +174,7 @@ Resources:
   CustomAPIDomain:
     Type: AWS::ApiGatewayV2::DomainName
     Properties:
-      DomainName: !Sub bbb.${PublicDomain}
+      DomainName: !Sub ${DNSRecord}
       DomainNameConfigurations:
         - SecurityPolicy: TLS_1_2
           EndpointType: Regional
@@ -131,7 +182,7 @@ Resources:
   APIGateway:
     Type: AWS::ApiGatewayV2::Api
     Properties:
-      Name: budgies-budgets-api
+      Name: !Ref APIGatewayName
       ProtocolType: HTTP
       Target: !GetAtt LambdaFunction.Arn
       DisableExecuteApiEndpoint: true
@@ -139,7 +190,7 @@ Resources:
     Type: AWS::ApiGatewayV2::ApiMapping
     Properties:
       ApiId: !Ref APIGateway
-      DomainName: !Sub bbb.${PublicDomain}
+      DomainName: !Sub ${DNSRecord}
       Stage: $default
   # Lambda to handle request data
   LambdaFunction:
@@ -215,7 +266,7 @@ Resources:
         SSEEnabled: true
         SSEType: KMS
       TableClass: STANDARD_INFREQUENT_ACCESS
-      TableName: budgies-budgets-transactions
+      TableName: !Ref TransactionTableName
   # Budgets are keyed on the user and sorted on the budget name
   BudgetTable:
     Type: AWS::DynamoDB::Table
@@ -235,7 +286,7 @@ Resources:
         SSEEnabled: true
         SSEType: KMS
       TableClass: STANDARD_INFREQUENT_ACCESS
-      TableName: budgies-budgets-budgets
+      TableName: !Ref BudgetTableName
   # Accounts are keyed on the user and sorted on the account name
   AccountTable:
     Type: AWS::DynamoDB::Table
@@ -255,4 +306,4 @@ Resources:
         SSEEnabled: true
         SSEType: KMS
       TableClass: STANDARD_INFREQUENT_ACCESS
-      TableName: budgies-budgets-accounts
+      TableName: !Ref AccountTableName
