@@ -149,7 +149,7 @@ class Transaction {
   String guid = "";
   DateTime date = DateTime.now();
   Category category = Category.Shopping;
-  String account = "Visa";
+  String account = "";
   double amount = 0.0;
   String memo = "";
   String user = "";

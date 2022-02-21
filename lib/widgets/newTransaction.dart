@@ -27,21 +27,23 @@ class _newTransactionState extends State<newTransaction> {
   _newTransactionState({required this.data, required this.updateList});
   TextEditingController amountController = TextEditingController();
   TextEditingController memoController = TextEditingController();
-  Transaction newTransaction = Transaction();
+
   bool bulkImport = false;
   bool dragging = false;
   Image? transactionImage;
   String? imagePath;
-
-  @override
-  void initState() {
-    super.initState();
-    amountController.text = "0.00";
-  }
+  late List<DropdownMenuItem<String>> userAccounts;
 
   @override
   Widget build(BuildContext context) {
     Transaction newTransaction = Transaction();
+    setState(() {
+      amountController.text = "0.00";
+      newTransaction.account = data.accounts
+          .firstWhere((acct) => acct.user == data.currentUser)
+          .name;
+      userAccounts = data.getUserAccounts(all: false);
+    });
     return StatefulBuilder(builder: (context, setState) {
       return AlertDialog(
           titlePadding: const EdgeInsets.all(8),
@@ -202,7 +204,7 @@ class _newTransactionState extends State<newTransaction> {
                       flex: 3,
                       child: DropdownButton<String>(
                           isExpanded: true,
-                          items: data.getUserAccounts(all: false),
+                          items: userAccounts,
                           value: newTransaction.account,
                           onChanged: (value) {
                             setState(() {
