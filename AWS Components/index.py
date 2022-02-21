@@ -71,6 +71,30 @@ def deleteTransaction(transaction):
     'user':{'S': transaction['user']}
   })
 
+def modifyTransaction(transaction):
+  dynamo.update_item(TableName=transactionTable, 
+    Key={
+      'guid':{'S': transaction['guid']}, 
+      'user':{'S': transaction['user']}}, 
+    ExpressionAttributeNames={
+      '#hmi':'hasMemoImage',
+      '#d':'date',
+      '#acc':'account',
+      '#cat':'category',
+      '#amt':'amount',
+      '#mem':'memo',
+    },
+    ExpressionAttributeValues={
+      ':hmi':{'BOOL':transaction['hasMemoImage']},
+      ':d':{'S':transaction['date']},
+      ':acc':{'S':transaction['account']},
+      ':cat':{'S':transaction['category']},
+      ':amt':{'N':str(transaction['amount'])},
+      ':mem':{'S':transaction['memo']},
+    },
+    UpdateExpression='SET #hmi=:hmi, #d=:d, #acc=:acc, #cat=:cat, #amt=:amt, #mem=:mem'
+    )
+
 def lambda_handler(event, context):
   method = event.get('requestContext', {'NONE'}).get('http', {'method': 'NONE'}).get('method', 'NONE')
   path = event.get('rawPath', 'NONE')
@@ -99,6 +123,11 @@ def lambda_handler(event, context):
     return {
       'statusCode': 200,
       'body': deleteTransaction(decompressRequest(body))
+    }
+  if path == "/modifyTransaction" and method == "POST":
+    return {
+      'statusCode': 200,
+      'body': modifyTransaction(decompressRequest(body))
     }
   return {
     'statusCode': 501,

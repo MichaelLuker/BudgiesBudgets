@@ -189,6 +189,7 @@ class _editTransactionState extends State<editTransaction> {
                     transactionImage = null;
                   });
                 }
+                modifyTransaction(transaction);
                 recalculate(regenerateRows: true);
                 Navigator.of(context).pop();
               },

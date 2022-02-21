@@ -113,3 +113,12 @@ Future<void> deleteTransaction(Transaction t) async {
   http.post(requestComponents["uri"],
       headers: requestComponents["headers"], body: compressData(t.toJson()));
 }
+
+Future<void> modifyTransaction(Transaction t) async {
+  // Generate the request components
+  var requestComponents =
+      await generateRequestComponents("/modifyTransaction", {});
+  // Send the request off to the backend, compressing the transaction for the body
+  http.post(requestComponents["uri"],
+      headers: requestComponents["headers"], body: compressData(t.toJson()));
+}
