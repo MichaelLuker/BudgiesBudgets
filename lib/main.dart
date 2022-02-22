@@ -1,4 +1,6 @@
 // Scaffold of the app, controlls display of everything and initial data load
+// ignore_for_file: avoid_init_to_null
+
 import 'dart:developer';
 import 'package:budgies_budgets/helpers/backendRequests.dart';
 import 'package:budgies_budgets/widgets/accountList.dart';
@@ -9,6 +11,7 @@ import 'package:budgies_budgets/widgets/userSelect.dart';
 import 'package:svg_icon/svg_icon.dart';
 import 'package:budgies_budgets/helpers/backgroundData.dart';
 import 'package:budgies_budgets/widgets/monthSelect.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
@@ -72,7 +75,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       {bool regenerateRows = false,
       bool updateAccountDropdowns = false,
       bool updateAccountList = false,
-      // ignore: avoid_init_to_null
       Transaction? t = null,
       String? action = null,
       double? oldValue = null}) {
@@ -136,7 +138,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         start: DateTime.parse(
             "${now.year}-${now.month.toString().padLeft(2, "0")}-01"),
         end: now));
+    final prefs = await SharedPreferences.getInstance();
     setState(() {
+      // Check if there is a previously set user to start with
+      if (prefs.containsKey('currentUser')) {
+        data.currentUser = prefs.getString('currentUser')!;
+      }
       userSelect = UserSelect(data: data, recalculate: recalculate);
       accountSelect = AccountSelect(
           key: accountSelectKey, data: data, recalculate: recalculate);

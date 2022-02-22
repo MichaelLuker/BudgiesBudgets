@@ -2,6 +2,7 @@
 
 import 'package:budgies_budgets/helpers/backgroundData.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Lets you select the month / year / date range to use
 class UserSelect extends StatefulWidget {
@@ -57,9 +58,11 @@ class _UserSelect extends State<UserSelect> {
                               ));
                         }).toList(),
                         value: data.currentUser,
-                        onChanged: (value) {
+                        onChanged: (value) async {
+                          final prefs = await SharedPreferences.getInstance();
                           setState(() {
                             if (value != null) {
+                              prefs.setString('currentUser', value);
                               data.currentUser = value;
                               data.currentAccount = "All";
                               data.categoryFilter = "Transactions";
