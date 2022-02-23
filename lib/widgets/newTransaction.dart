@@ -83,7 +83,9 @@ class _newTransactionState extends State<newTransaction> {
                         recalculate(t: t, action: "add");
                       }
                       recalculate(
-                          regenerateRows: true, updateAccountList: true);
+                          regenerateRows: true,
+                          updateAccountList: true,
+                          updateGraphs: true);
                     });
                     Navigator.of(context).pop();
                   }
@@ -127,7 +129,8 @@ class _newTransactionState extends State<newTransaction> {
                       t: newTransaction,
                       action: "add",
                       regenerateRows: true,
-                      updateAccountList: true);
+                      updateAccountList: true,
+                      updateGraphs: true);
                   Navigator.of(context).pop();
                 },
                 child: const Text(

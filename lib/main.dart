@@ -6,6 +6,7 @@ import 'package:budgies_budgets/helpers/backendRequests.dart';
 import 'package:budgies_budgets/widgets/accountList.dart';
 import 'package:budgies_budgets/widgets/accountSelect.dart';
 import 'package:budgies_budgets/widgets/newTransaction.dart';
+import 'package:budgies_budgets/widgets/transactionBreakdown.dart';
 import 'package:budgies_budgets/widgets/transactionList.dart';
 import 'package:budgies_budgets/widgets/userSelect.dart';
 import 'package:svg_icon/svg_icon.dart';
@@ -61,11 +62,13 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   GlobalKey<TransactionListState> transactionListKey = GlobalKey();
   GlobalKey<AccountListState> accountListKey = GlobalKey();
   GlobalKey<AccountSelectState> accountSelectKey = GlobalKey();
+  GlobalKey<TransactionBreakdownState> transactionBreakdownKey = GlobalKey();
   late UserSelect userSelect;
   late AccountSelect accountSelect;
   late MonthSelect monthSelect;
   late TransactionList transactionList;
   late AccountList accountList;
+  late TransactionBreakdown transactionBreakdown;
   late AnimationController syncAnimationController;
   bool syncing = false;
 
@@ -75,6 +78,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       {bool regenerateRows = false,
       bool updateAccountDropdowns = false,
       bool updateAccountList = false,
+      bool updateGraphs = false,
       Transaction? t = null,
       String? action = null,
       double? oldValue = null}) {
@@ -100,6 +104,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       }
       modifyAccount(data.accounts
           .firstWhere((a) => t.user == a.user && t.account == a.name));
+    }
+    if (updateGraphs) {
+      transactionBreakdownKey.currentState?.updateGraph();
     }
     if (regenerateRows) {
       transactionListKey.currentState?.generateRows();
@@ -155,6 +162,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           key: transactionListKey, data: data, recalculate: recalculate);
       accountList = AccountList(
           key: accountListKey, data: data, recalculate: recalculate);
+      transactionBreakdown =
+          TransactionBreakdown(key: transactionBreakdownKey, data: data);
       initialized = true;
     });
   }
@@ -200,7 +209,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                             await syncData();
                             recalculate(
                                 regenerateRows: true,
-                                updateAccountDropdowns: true);
+                                updateAccountDropdowns: true,
+                                updateGraphs: true);
                           }
                         },
                         child: RotationTransition(
@@ -230,6 +240,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                               transactionList,
                               const Spacer(),
                               accountList,
+                              const Spacer(),
+                              transactionBreakdown,
                               const Spacer(),
                             ],
                           )),

@@ -69,7 +69,8 @@ class _UserSelect extends State<UserSelect> {
                               recalculate(
                                   regenerateRows: true,
                                   updateAccountDropdowns: true,
-                                  updateAccountList: true);
+                                  updateAccountList: true,
+                                  updateGraphs: true);
                             }
                           });
                         })),
@@ -132,7 +133,9 @@ class _UserSelect extends State<UserSelect> {
                           data.currentUser = userController.text;
                           userController.text = "";
                           recalculate(
-                              regenerateRows: true, updateAccountList: true);
+                              regenerateRows: true,
+                              updateAccountList: true,
+                              updateGraphs: true);
                         });
                       });
                     },
@@ -179,7 +182,9 @@ class _UserSelect extends State<UserSelect> {
                             data.users.remove(data.currentUser);
                             data.currentUser = data.users[0];
                             recalculate(
-                                regenerateRows: true, updateAccountList: true);
+                                regenerateRows: true,
+                                updateAccountList: true,
+                                updateGraphs: true);
                             confirmDelete = false;
                           }
                         });

@@ -74,7 +74,8 @@ class AccountSelectState extends State<AccountSelect> {
                               selectedAccount = value;
                               recalculate(
                                   regenerateRows: true,
-                                  updateAccountList: true);
+                                  updateAccountList: true,
+                                  updateGraphs: true);
                             }
                           });
                         })),
@@ -116,7 +117,8 @@ class AccountSelectState extends State<AccountSelect> {
                                             balanceController.text = "0.00";
                                             recalculate(
                                                 updateAccountDropdowns: true,
-                                                updateAccountList: true);
+                                                updateAccountList: true,
+                                                updateGraphs: true);
                                           });
                                           Navigator.of(context).pop();
                                         },
@@ -249,7 +251,8 @@ class AccountSelectState extends State<AccountSelect> {
                             recalculate(
                                 regenerateRows: true,
                                 updateAccountDropdowns: true,
-                                updateAccountList: true);
+                                updateAccountList: true,
+                                updateGraphs: true);
                             confirmDelete = false;
                           }
                         });

@@ -145,34 +145,38 @@ class TransactionListState extends State<TransactionList> {
               canTapOnHeader: true,
               headerBuilder: (BuildContext context, bool expanded) {
                 return ListTile(
-                    title: DropdownButton<String>(
-                        alignment: Alignment.center,
-                        isExpanded: true,
-                        items: const [
-                          DropdownMenuItem<String>(
-                              alignment: Alignment.center,
-                              value: "Transactions",
-                              child: Text(
-                                "Transactions",
-                                style: TextStyle(color: Colors.lightBlueAccent),
-                              )),
-                          DropdownMenuItem<String>(
-                              alignment: Alignment.center,
-                              value: "Subscription",
-                              child: Text(
-                                "Subscription",
-                                style: TextStyle(color: Colors.lightBlueAccent),
-                              )),
-                        ],
-                        value: data.categoryFilter,
-                        onChanged: (value) {
-                          setState(() {
-                            if (value != null) {
-                              data.categoryFilter = value;
-                              recalculate(regenerateRows: true);
-                            }
-                          });
-                        }));
+                    title: Padding(
+                  padding: const EdgeInsets.fromLTRB(70, 0, 0, 0),
+                  child: DropdownButton<String>(
+                      alignment: Alignment.center,
+                      isExpanded: true,
+                      items: const [
+                        DropdownMenuItem<String>(
+                            alignment: Alignment.center,
+                            value: "Transactions",
+                            child: Text(
+                              "Transactions",
+                              style: TextStyle(color: Colors.lightBlueAccent),
+                            )),
+                        DropdownMenuItem<String>(
+                            alignment: Alignment.center,
+                            value: "Subscription",
+                            child: Text(
+                              "Subscription",
+                              style: TextStyle(color: Colors.lightBlueAccent),
+                            )),
+                      ],
+                      value: data.categoryFilter,
+                      onChanged: (value) {
+                        setState(() {
+                          if (value != null) {
+                            data.categoryFilter = value;
+                            recalculate(
+                                regenerateRows: true, updateGraphs: true);
+                          }
+                        });
+                      }),
+                ));
               },
               body: SingleChildScrollView(
                   child: Table(

@@ -98,7 +98,8 @@ class _editTransactionState extends State<editTransaction> {
                         regenerateRows: true,
                         t: transaction,
                         action: "delete",
-                        updateAccountList: true);
+                        updateAccountList: true,
+                        updateGraphs: true);
                     setState(() {
                       confirmDelete = false;
                     });
@@ -169,7 +170,8 @@ class _editTransactionState extends State<editTransaction> {
                       regenerateRows: true,
                       t: newTransaction,
                       action: "add",
-                      updateAccountList: true);
+                      updateAccountList: true,
+                      updateGraphs: true);
                   Navigator.of(context).pop();
                 });
               },
@@ -209,7 +211,8 @@ class _editTransactionState extends State<editTransaction> {
                     t: transaction,
                     oldValue: oldVal,
                     action: "modify",
-                    updateAccountList: true);
+                    updateAccountList: true,
+                    updateGraphs: true);
                 Navigator.of(context).pop();
               },
               child: const Text(

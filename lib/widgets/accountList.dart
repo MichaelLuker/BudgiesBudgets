@@ -56,7 +56,7 @@ class AccountListState extends State<AccountList> {
               ),
               TableCell(
                 child: Center(
-                    child: Text("\$ " + a.balance.toString().padLeft(2),
+                    child: Text("\$ " + a.balance.toStringAsFixed(2),
                         style: numValue)),
               ),
               TableCell(
@@ -156,6 +156,7 @@ class AccountListState extends State<AccountList> {
                     )),
               )
             ]));
+        count++;
       }
     });
   }
@@ -174,7 +175,7 @@ class AccountListState extends State<AccountList> {
             isExpanded: expanded,
             headerBuilder: (BuildContext context, bool expanded) {
               return const ListTile(
-                  title: Center(child: Text("Account Details")));
+                  title: Center(child: Text("            Account Details")));
             },
             body: SingleChildScrollView(
                 child: Table(
