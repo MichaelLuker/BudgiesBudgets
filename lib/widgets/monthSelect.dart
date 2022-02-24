@@ -62,7 +62,10 @@ class _MonthSelectState extends State<MonthSelect> {
                       setState(() {
                         data.startDate = value.start;
                         data.endDate = value.end;
-                        recalculate(regenerateRows: true, updateGraphs: true);
+                        recalculate(
+                            regenerateRows: true,
+                            updateGraphs: true,
+                            sync: true);
                       });
                     }
                   });

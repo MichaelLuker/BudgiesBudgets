@@ -79,10 +79,16 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       bool updateAccountDropdowns = false,
       bool updateAccountList = false,
       bool updateGraphs = false,
+      bool sync = false,
       Transaction? t = null,
       String? action = null,
-      double? oldValue = null}) {
+      double? oldValue = null}) async {
     log("Reticulating Splines...");
+    if (sync) {
+      await syncData();
+      data.sortAccounts();
+      data.sortTransactions();
+    }
     // If a transaction is sent apply the modification to the account then do the row regen
     if (t != null && action != null) {
       switch (action) {
