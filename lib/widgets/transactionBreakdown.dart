@@ -42,6 +42,7 @@ class TransactionBreakdownState extends State<TransactionBreakdown> {
       double totalSpent = 0;
       double totalBudgeted = 0;
       List<DataSample> categoryValues = [];
+      List<List<dynamic>> tempRowData = [];
 
       int count = 0;
       for (Category c in Category.values) {
@@ -78,106 +79,106 @@ class TransactionBreakdownState extends State<TransactionBreakdown> {
         double remaining = budgetedAmount - sample.amount;
         totalSpent += sample.amount;
         totalBudgeted += budgetedAmount;
-        TextStyle numValue = TextStyle(
-            color:
-                (remaining >= 0) ? Colors.lightGreenAccent : Colors.redAccent);
-        rows.add(TableRow(
-            decoration: BoxDecoration(
-                color: (count % 2 == 0)
-                    ? const Color.fromARGB(255, 66, 66, 66)
-                    : const Color.fromARGB(255, 80, 80, 80)),
-            children: [
-              TableCell(
-                child: Center(child: Text(sample.cString, style: stringValue)),
-              ),
-              TableCell(
-                child: Center(
-                    child: Text("\$ " + sample.amount.toString().padLeft(2),
-                        style: numValue)),
-              ),
-              TableCell(
-                child: Center(
-                    child: Text("\$ " + budgetedAmount.toString().padLeft(2),
-                        style: numValue)),
-              ),
-              TableCell(
-                child: Center(
-                    child: Text("\$ " + remaining.toString().padLeft(2),
-                        style: numValue)),
-              ),
-              TableCell(
-                child: IconButton(
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return StatefulBuilder(
-                                builder: (context, setState) {
-                              return AlertDialog(
-                                  titlePadding: const EdgeInsets.all(8),
-                                  contentPadding: const EdgeInsets.all(8),
-                                  title: const Text("New Account"),
-                                  actions: [
-                                    TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: const Text(
-                                          "Cancel",
-                                          style: TextStyle(
-                                              color: Colors.redAccent),
-                                        )),
-                                    TextButton(
-                                        onPressed: () {
-                                          // Actions to set a budget
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: const Text(
-                                          "Confirm",
-                                          style: TextStyle(
-                                              color: Colors.lightGreenAccent),
-                                        ))
-                                  ],
-                                  content: SingleChildScrollView(
-                                      child: ListBody(
-                                    children: [
-                                      // Budget Amount
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          const Flexible(
-                                              flex: 0,
-                                              child: Text("Amount:   ")),
-                                          Expanded(
-                                              flex: 3,
-                                              child: TextField(
-                                                keyboardType:
-                                                    TextInputType.number,
-                                                controller: budgetController,
-                                                style: const TextStyle(
-                                                    color:
-                                                        Colors.lightBlueAccent),
-                                              )),
-                                        ],
-                                      ),
-                                    ],
-                                  )));
-                            });
-                          });
-                    },
-                    icon: const Icon(
-                      Icons.edit,
-                      size: 18,
-                    )),
-              )
-            ]));
 
+        tempRowData.add([
+          (count % 2 == 0)
+              ? const Color.fromARGB(255, 66, 66, 66)
+              : const Color.fromARGB(255, 80, 80, 80),
+          sample.cString,
+          sample.amount,
+          budgetedAmount,
+          remaining
+        ]);
         count++;
       }
       // Sort the table rows by amount spent
-      rows.sort((a, b) =>
-          a.children![1].toString().compareTo(b.children![1].toString()));
+      tempRowData.sort((a, b) => b[2].compareTo(a[2]));
+      tempRowData.forEach((element) {
+        TextStyle numValue = TextStyle(
+            color:
+                (element[4] >= 0) ? Colors.lightGreenAccent : Colors.redAccent);
+        rows.add(
+            TableRow(decoration: BoxDecoration(color: element[0]), children: [
+          TableCell(
+            child: Center(child: Text(element[1], style: stringValue)),
+          ),
+          TableCell(
+            child: Center(
+                child: Text("\$ " + element[2].toStringAsFixed(2).padLeft(2),
+                    style: numValue)),
+          ),
+          TableCell(
+            child: Center(
+                child: Text("\$ " + element[3].toStringAsFixed(2).padLeft(2),
+                    style: numValue)),
+          ),
+          TableCell(
+            child: Center(
+                child: Text("\$ " + element[4].toStringAsFixed(2).padLeft(2),
+                    style: numValue)),
+          ),
+          TableCell(
+            child: IconButton(
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return StatefulBuilder(builder: (context, setState) {
+                          return AlertDialog(
+                              titlePadding: const EdgeInsets.all(8),
+                              contentPadding: const EdgeInsets.all(8),
+                              title: const Text("New Account"),
+                              actions: [
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text(
+                                      "Cancel",
+                                      style: TextStyle(color: Colors.redAccent),
+                                    )),
+                                TextButton(
+                                    onPressed: () {
+                                      // Actions to set a budget
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text(
+                                      "Confirm",
+                                      style: TextStyle(
+                                          color: Colors.lightGreenAccent),
+                                    ))
+                              ],
+                              content: SingleChildScrollView(
+                                  child: ListBody(
+                                children: [
+                                  // Budget Amount
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Flexible(
+                                          flex: 0, child: Text("Amount:   ")),
+                                      Expanded(
+                                          flex: 3,
+                                          child: TextField(
+                                            keyboardType: TextInputType.number,
+                                            controller: budgetController,
+                                            style: const TextStyle(
+                                                color: Colors.lightBlueAccent),
+                                          )),
+                                    ],
+                                  ),
+                                ],
+                              )));
+                        });
+                      });
+                },
+                icon: const Icon(
+                  Icons.edit,
+                  size: 18,
+                )),
+          )
+        ]));
+      });
       // Set the values for the row that shows the total values
       double totalRemaining = totalBudgeted - totalSpent;
       TextStyle numValue = TextStyle(
