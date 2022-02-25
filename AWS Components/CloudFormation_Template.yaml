@@ -274,13 +274,13 @@ Resources:
       AttributeDefinitions:
         - AttributeName: user
           AttributeType: S
-        - AttributeName: name
+        - AttributeName: category
           AttributeType: S
       BillingMode: PAY_PER_REQUEST
       KeySchema: 
         - AttributeName: user
           KeyType: HASH
-        - AttributeName: name
+        - AttributeName: category
           KeyType: RANGE
       SSESpecification:
         SSEEnabled: true

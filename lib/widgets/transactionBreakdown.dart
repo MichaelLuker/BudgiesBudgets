@@ -6,6 +6,7 @@ import 'dart:math';
 import 'dart:developer' as dev;
 
 import 'package:budgies_budgets/helpers/backgroundData.dart';
+import 'package:budgies_budgets/helpers/backendRequests.dart';
 import 'package:flutter/material.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 
@@ -77,6 +78,13 @@ class TransactionBreakdownState extends State<TransactionBreakdown> {
         categoryValues.add(sample);
       }
       double budgetedAmount = 0;
+      if (data.budgets.containsKey(data.currentUser)) {
+        var temp = data.budgets[data.currentUser]!
+            .where((element) => element.category == c);
+        if (temp.isNotEmpty) {
+          budgetedAmount = temp.first.amount;
+        }
+      }
       double remaining = budgetedAmount - sample.amount;
       totalSpent += sample.amount;
       totalBudgeted += budgetedAmount;
@@ -152,6 +160,13 @@ class TransactionBreakdownState extends State<TransactionBreakdown> {
           monthData.add(sample);
         }
         double budgetedAmount = 0;
+        if (data.budgets.containsKey(data.currentUser)) {
+          var temp = data.budgets[data.currentUser]!
+              .where((element) => element.category == c);
+          if (temp.isNotEmpty) {
+            budgetedAmount = temp.first.amount;
+          }
+        }
         double remaining = budgetedAmount - sample.amount;
         totalSpent += sample.amount;
         totalBudgeted += budgetedAmount;
@@ -228,7 +243,7 @@ class TransactionBreakdownState extends State<TransactionBreakdown> {
                       return AlertDialog(
                           titlePadding: const EdgeInsets.all(8),
                           contentPadding: const EdgeInsets.all(8),
-                          title: const Text("New Account"),
+                          title: const Text("Budgeted Amount"),
                           actions: [
                             TextButton(
                                 onPressed: () {
@@ -241,6 +256,42 @@ class TransactionBreakdownState extends State<TransactionBreakdown> {
                             TextButton(
                                 onPressed: () {
                                   // Actions to set a budget
+                                  Budget b = Budget(
+                                      user: data.currentUser,
+                                      category: categoryFromString(element[1]),
+                                      amount:
+                                          double.parse(budgetController.text));
+                                  writeBudget(b);
+                                  if (data.budgets
+                                      .containsKey(data.currentUser)) {
+                                    var temp = data.budgets[data.currentUser]!
+                                        .where((e) =>
+                                            e.category ==
+                                            categoryFromString(element[1]));
+                                    if (temp.isEmpty) {
+                                      data.budgets[data.currentUser]!.add(b);
+                                    } else {
+                                      for (int i = 0;
+                                          i <
+                                              data.budgets[data.currentUser]!
+                                                  .length;
+                                          i++) {
+                                        if (data.budgets[data.currentUser]![
+                                                i] ==
+                                            temp.first) {
+                                          data.budgets[data.currentUser]![i]
+                                                  .amount =
+                                              double.parse(
+                                                  budgetController.text);
+                                        }
+                                      }
+                                    }
+                                  } else {
+                                    data.budgets[data.currentUser] = [b];
+                                  }
+
+                                  updateGraph();
+                                  budgetController.text = "";
                                   Navigator.of(context).pop();
                                 },
                                 child: const Text(

@@ -161,3 +161,11 @@ Future<void> deleteAccount(Account a) async {
   http.post(requestComponents["uri"],
       headers: requestComponents["headers"], body: compressData(a.toJson()));
 }
+
+Future<void> writeBudget(Budget b) async {
+  // Generate the request components
+  var requestComponents = await generateRequestComponents("/writeBudget", {});
+  // Send the request off to the backend, compressing the transaction for the body
+  http.post(requestComponents["uri"],
+      headers: requestComponents["headers"], body: compressData(b.toJson()));
+}

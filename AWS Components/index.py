@@ -29,7 +29,7 @@ def compressString(res):
 
 def getAllFinancialData(start, end):
   # Get the account data first 
-  returnData = {'accounts': [], 'transactions':[]}
+  returnData = {'accounts': [], 'transactions':[], 'budgets': []}
   accountResults = dynamo.scan(TableName=accountTable)['Items']
   for item in accountResults:
     returnData['accounts'].append({
@@ -55,6 +55,15 @@ def getAllFinancialData(start, end):
       'memo': item['memo']['S'],
       'hasMemoImage': item['hasMemoImage']['BOOL']
     })
+  # Then the budgets
+  budgetResults = dynamo.scan(TableName=budgetTable)['Items']
+  for item in budgetResults:
+    returnData['budgets'].append({
+      'user': item['user']['S'],
+      'category': item['category']['S'],
+      'amount': float(item['amount']['N'])
+    })
+
   # Return the compressed string
   return compressString(json.dumps(returnData))
 
@@ -144,6 +153,13 @@ def deleteAccount(account):
     'name': {'S': account['name']}
   })
 
+def writeBudget(budget):
+  dynamo.put_item(TableName=budgetTable, Item={
+    'user': {'S': budget['user']},
+    'category': {'S': budget['category']},
+    'amount': {'N': budget['amount']}
+  })
+
 def lambda_handler(event, context):
   method = event.get('requestContext', {'NONE'}).get('http', {'method': 'NONE'}).get('method', 'NONE')
   path = event.get('rawPath', 'NONE')
@@ -207,6 +223,11 @@ def lambda_handler(event, context):
     return {
       'statusCode': 200,
       'body': deleteAccount(decompressRequest(body))
+    }
+  if path == "/writeBudget" and method == "POST":
+    return {
+      'statusCode': 200,
+      'body': writeBudget(decompressRequest(body))
     }
   return {
     'statusCode': 501,

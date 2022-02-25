@@ -246,11 +246,31 @@ String formatDate(DateTime d) {
   return "${monthString(d.month)} ${(d.day < 10) ? "0" + d.day.toString() : d.day} ${d.year}";
 }
 
+class Budget {
+  String user;
+  Category category;
+  double amount;
+
+  Budget({required this.user, required this.category, required this.amount});
+  Budget.fromJson(Map<String, dynamic> json)
+      : user = json['user'],
+        category = categoryFromString(json['category']),
+        amount = json['amount'];
+  Map<String, dynamic> toJson() {
+    return {
+      'user': user,
+      'category': category.toString().split('.').last,
+      'amount': amount.toStringAsFixed(2).padLeft(2, "0")
+    };
+  }
+}
+
 // Custom object to hold all the financial data (transactions and accounts) that gets used for
 //   filtering and analysis
 class FinancialData {
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
+  Map<String, List<Budget>> budgets = {};
   List<Account> accounts = [];
   List<Transaction> allTransactions = [];
   List<Transaction> filteredTransactions = [];
@@ -345,15 +365,30 @@ class FinancialData {
     for (Map<String, dynamic> t in json['transactions']) {
       allTransactions.add(Transaction.fromJson(t));
     }
+
+    for (Map<String, dynamic> b in json['budgets']) {
+      if (budgets.containsKey(b['user'])) {
+        budgets[b['user']]!.add(Budget.fromJson(b));
+      } else {
+        budgets[b['user']] = <Budget>[Budget.fromJson(b)];
+      }
+    }
     currentUser = users[0];
     sortAccounts();
     sortTransactions();
   }
 
   Map<String, dynamic> toJson() {
+    List<dynamic> temp = [];
+    for (String key in budgets.keys) {
+      for (Budget b in budgets[key]!) {
+        temp.add(b.toJson());
+      }
+    }
     return {
       "accounts": accounts.map((e) => e.toJson()).toList(),
-      "transactions": allTransactions.map((e) => e.toJson()).toList()
+      "transactions": allTransactions.map((e) => e.toJson()).toList(),
+      "budgets": temp
     };
   }
 
