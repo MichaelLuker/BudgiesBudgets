@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Budgies Budgets',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(brightness: Brightness.dark),
+      theme: ThemeData(brightness: Brightness.dark, useMaterial3: true),
       home: const MyHomePage(title: 'Budgies Budgets'),
     );
   }
@@ -204,7 +204,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                 Align(
                   alignment: Alignment.bottomLeft,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 0, 16),
+                    padding: const EdgeInsets.fromLTRB(18, 0, 0, 50),
                     child: FloatingActionButton(
                         onPressed: () async {
                           if (!syncing) {

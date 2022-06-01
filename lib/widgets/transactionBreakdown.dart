@@ -350,6 +350,12 @@ class TransactionBreakdownState extends State<TransactionBreakdown> {
       // Sort the table rows by amount spent
       List<dynamic> r = temp['rd'];
       r.sort((a, b) => b[2].compareTo(a[2]));
+      // Fix the background colors of the rows
+      for (int i = 0; i < r.length; i++) {
+        r[i][0] = (i % 2 == 0)
+            ? const Color.fromARGB(255, 66, 66, 66)
+            : const Color.fromARGB(255, 80, 80, 80);
+      }
       r.forEach(addRow);
       // Set the values for the row that shows the total values
       double totalRemaining = temp['tb'] - temp['ts'];
@@ -359,7 +365,7 @@ class TransactionBreakdownState extends State<TransactionBreakdown> {
               : Colors.redAccent);
       totalRow = TableRow(
           decoration:
-              const BoxDecoration(color: Color.fromARGB(255, 66, 66, 66)),
+              const BoxDecoration(color: Color.fromARGB(255, 80, 80, 80)),
           children: [
             TableCell(
               child: Center(child: Text("Totals", style: stringValue)),

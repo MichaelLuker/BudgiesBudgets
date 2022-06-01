@@ -31,6 +31,8 @@ class _newTransactionState extends State<newTransaction> {
 
   bool bulkImport = false;
   bool dragging = false;
+  bool isTransfer = false;
+  String? toAccount;
   Image? transactionImage;
   String? imagePath;
   late List<DropdownMenuItem<String>> userAccounts;
@@ -55,7 +57,7 @@ class _newTransactionState extends State<newTransaction> {
               child: Center(
                   child: bulkImport
                       ? const Text("Bulk Transaction Import")
-                      : const Text("New Transaction Details"))),
+                      : const Text("New Transaction"))),
           actions: [
             TextButton(
                 onPressed: () async {
@@ -121,6 +123,10 @@ class _newTransactionState extends State<newTransaction> {
                     });
                   }
                   newTransaction.guid = generateGUID(newTransaction);
+                  // Reverse the value if transfer?
+                  if (isTransfer) {
+                    newTransaction.amount = newTransaction.amount * -1;
+                  }
                   // Adding the transaction locally
                   data.allTransactions.add(newTransaction);
                   // Write the new transaction to the backend
@@ -131,6 +137,25 @@ class _newTransactionState extends State<newTransaction> {
                       regenerateRows: true,
                       updateAccountList: true,
                       updateGraphs: true);
+                  // If it was a transfer add the other transaction
+                  if (isTransfer) {
+                    Transaction newTransfer = Transaction.withValues(
+                        user: newTransaction.user,
+                        date: newTransaction.date,
+                        category: newTransaction.category,
+                        account: toAccount!,
+                        amount: newTransaction.amount * -1,
+                        memo: newTransaction.memo);
+                    newTransfer.guid = generateGUID(newTransfer);
+                    data.allTransactions.add(newTransfer);
+                    writeNewTransaction(newTransfer);
+                    recalculate(
+                        t: newTransfer,
+                        action: "add",
+                        regenerateRows: true,
+                        updateAccountList: true,
+                        updateGraphs: true);
+                  }
                   Navigator.of(context).pop();
                 },
                 child: const Text(
@@ -200,6 +225,7 @@ class _newTransactionState extends State<newTransaction> {
                             setState(() {
                               if (value != null) {
                                 newTransaction.category = value;
+                                isTransfer = value == Category.Transfer;
                               }
                             });
                           })),
@@ -209,7 +235,11 @@ class _newTransactionState extends State<newTransaction> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Flexible(flex: 0, child: Text("Account:    ")),
+                  Flexible(
+                      flex: 0,
+                      child: (isTransfer)
+                          ? const Text("Account From:     ")
+                          : const Text("Account:    ")),
                   Expanded(
                       flex: 3,
                       child: DropdownButton<String>(
@@ -225,6 +255,28 @@ class _newTransactionState extends State<newTransaction> {
                           })),
                 ],
               ),
+              Visibility(
+                visible: isTransfer,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Flexible(flex: 0, child: Text("Account To:    ")),
+                    Expanded(
+                        flex: 3,
+                        child: DropdownButton<String>(
+                            isExpanded: true,
+                            items: userAccounts,
+                            value: toAccount,
+                            onChanged: (value) {
+                              setState(() {
+                                if (value != null) {
+                                  toAccount = value;
+                                }
+                              });
+                            })),
+                  ],
+                ),
+              ),
               // Then the amount
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -233,7 +285,8 @@ class _newTransactionState extends State<newTransaction> {
                   Expanded(
                       flex: 3,
                       child: TextField(
-                        keyboardType: TextInputType.number,
+                        keyboardType: const TextInputType.numberWithOptions(
+                            signed: true, decimal: true),
                         controller: amountController,
                         style: const TextStyle(color: Colors.lightBlueAccent),
                       )),
