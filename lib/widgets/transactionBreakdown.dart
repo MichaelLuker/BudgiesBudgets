@@ -312,7 +312,9 @@ class TransactionBreakdownState extends State<TransactionBreakdown> {
                                   Expanded(
                                       flex: 3,
                                       child: TextField(
-                                        keyboardType: TextInputType.number,
+                                        keyboardType: const TextInputType
+                                                .numberWithOptions(
+                                            signed: true, decimal: true),
                                         controller: budgetController,
                                         style: const TextStyle(
                                             color: Colors.lightBlueAccent),

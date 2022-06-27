@@ -65,8 +65,7 @@ class _newTransactionState extends State<newTransaction> {
                     bulkImport = !bulkImport;
                   });
                   FilePickerResult? file = await FilePicker.platform.pickFiles(
-                      type: FileType.custom,
-                      allowedExtensions: ['jpg', 'jpeg', 'png']);
+                      type: FileType.custom, allowedExtensions: ['csv']);
                   if (file != null) {
                     String filePath = file.files[0].path.toString();
                     final csv = await readCsv(filePath);

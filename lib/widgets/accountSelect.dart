@@ -163,7 +163,10 @@ class AccountSelectState extends State<AccountSelect> {
                                               flex: 3,
                                               child: TextField(
                                                 keyboardType:
-                                                    TextInputType.number,
+                                                    const TextInputType
+                                                            .numberWithOptions(
+                                                        signed: true,
+                                                        decimal: true),
                                                 controller: balanceController,
                                                 style: const TextStyle(
                                                     color:

@@ -316,7 +316,7 @@ class _editTransactionState extends State<editTransaction> {
                     flex: 3,
                     child: TextField(
                       keyboardType: const TextInputType.numberWithOptions(
-                            signed: true, decimal: true),
+                          signed: true, decimal: true),
                       controller: amountController,
                       style: const TextStyle(color: Colors.lightBlueAccent),
                     )),
@@ -330,7 +330,8 @@ class _editTransactionState extends State<editTransaction> {
                 Expanded(
                     flex: 3,
                     child: TextField(
-                      keyboardType: TextInputType.number,
+                      keyboardType: const TextInputType.numberWithOptions(
+                          signed: true, decimal: true),
                       controller: memoController,
                       style: const TextStyle(color: Colors.lightBlueAccent),
                     )),
